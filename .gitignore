@@ -1,0 +1,6 @@
+build/
+.idea/
+.gradle/
+simgui.json
+simgui-ds.json
+simgui-window.json
