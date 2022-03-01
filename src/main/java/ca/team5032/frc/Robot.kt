@@ -2,7 +2,6 @@ package ca.team5032.frc
 
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
-import edu.wpi.first.math.filter.SlewRateLimiter
 import edu.wpi.first.wpilibj.ADIS16448_IMU
 import edu.wpi.first.wpilibj.SPI
 import edu.wpi.first.wpilibj.TimedRobot
@@ -17,11 +16,6 @@ object Robot : TimedRobot() {
 
     private lateinit var joystick: XboxController
     private lateinit var mecanumDrive: MecanumDrive
-
-    // Rate limiters to limit jerkiness of the robot
-    private lateinit var xFilter: SlewRateLimiter
-    private lateinit var yFilter: SlewRateLimiter
-    private lateinit var zFilter: SlewRateLimiter
 
     private lateinit var falcons: List<WPI_TalonFX>
 
@@ -56,7 +50,6 @@ object Robot : TimedRobot() {
             }
         }
 
-        falcons.forEach { it.setNeutralMode(NeutralMode.Brake) }
         falcons[2].inverted = true
         falcons[3].inverted = true
 
@@ -71,12 +64,6 @@ object Robot : TimedRobot() {
 
         // Enable safety on the mecanum drive.
         mecanumDrive.isSafetyEnabled = false
-
-        // Initialize the rate limiters, which limit the rate change of movement values.
-        val rateLimit = 0.5
-        xFilter = SlewRateLimiter(rateLimit)
-        yFilter = SlewRateLimiter(rateLimit)
-        zFilter = SlewRateLimiter(rateLimit)
     }
 
     override fun teleopPeriodic() {
