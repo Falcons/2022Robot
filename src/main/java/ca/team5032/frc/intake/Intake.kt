@@ -13,7 +13,7 @@ class Intake : SubsystemBase(), Tabbed {
         const val INTAKE_ID = 4
 
         // The default power of the intake motor.
-        var DEFAULT_POWER = DoubleProperty("Power", 0.75)
+        val DEFAULT_POWER = DoubleProperty("Power", 0.75)
     }
 
     enum class State {

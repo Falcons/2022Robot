@@ -22,16 +22,16 @@ class DriveTrain : SubsystemBase(), Tabbed {
         // TODO: Look into a generic 'Property' class to represent modifiable properties for subsystems, automatically
         // TODO: putting them into the Config tab in Shuffleboard.
         // Threshold to consider the robot as moving  (receiving joystick input)
-        var DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
+        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
         // Sensitivity for ySpeed cartesian movement. (north-south)
-        var Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 0.4)
+        val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 0.4)
         // Sensitivity for xSpeed cartesian movement. (south-west)
-        var X_SENSITIVITY = DoubleProperty("X Senstivity", 0.5)
+        val X_SENSITIVITY = DoubleProperty("X Senstivity", 0.5)
 
         // Constant rotation speed for the robot.
-        var ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
+        val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
         // Magnitude of micro movements done by the dpad.
-        var MICRO_SPEED = DoubleProperty("Micro Speed", 0.4)
+        val MICRO_SPEED = DoubleProperty("Micro Speed", 0.4)
     }
 
     enum class State {
