@@ -6,6 +6,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab
 interface Tabbed {
 
     val tab: ShuffleboardTab
-        get() = Shuffleboard.getTab(this.javaClass.name)
+        get() = Shuffleboard.getTab(this.javaClass.simpleName)
 
 }

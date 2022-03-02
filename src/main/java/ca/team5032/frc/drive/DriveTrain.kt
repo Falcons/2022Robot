@@ -12,10 +12,23 @@ import kotlin.math.abs
 class DriveTrain : SubsystemBase(), Tabbed {
 
     companion object {
+        // IDs for the 4 drive Falcon500s.
         const val FRONT_LEFT_ID = 0
         const val REAR_LEFT_ID = 1
         const val FRONT_RIGHT_ID = 2
         const val REAR_RIGHT_ID = 3
+
+        // Threshold to consider the robot as moving  (receiving joystick input)
+        const val DEADBAND_THRESHOLD = 0.1
+        // Sensitivity for ySpeed cartesian movement. (north-south)
+        const val Y_SENSITIVITY = 0.4
+        // Sensitivity for xSpeed cartesian movement. (south-west)
+        const val X_SENSITIVITY = 0.5
+
+        // Constant rotation speed for the robot.
+        const val ROTATION_SPEED = 0.45
+        // Magnitude of micro movements done by the dpad.
+        const val MICRO_SPEED = 0.4
     }
 
     enum class State {
@@ -53,7 +66,9 @@ class DriveTrain : SubsystemBase(), Tabbed {
     override fun periodic() {
         if (Perseverance.isDisabled) return
 
-        if (abs(controller.leftY) > 0.1 || abs(controller.leftX) > 0.1 || controller.pov != -1) {
+        if (abs(controller.leftY) > DEADBAND_THRESHOLD
+            || abs(controller.leftX) > DEADBAND_THRESHOLD
+            || controller.pov != -1) {
             if (state == State.STATIONARY) unlock()
         } else {
             if (state == State.DRIVING) lock()
@@ -61,7 +76,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
 
         if (controller.pov != -1) {
             drive.drivePolar(
-                0.4,
+                MICRO_SPEED,
                 controller.pov.toDouble(),
                 0.0
             )
@@ -69,12 +84,12 @@ class DriveTrain : SubsystemBase(), Tabbed {
         }
 
         var rotation = 0.0
-        if (controller.leftBumper) rotation -= 0.45
-        if (controller.rightBumper) rotation += 0.45
+        if (controller.leftBumper) rotation -= ROTATION_SPEED
+        if (controller.rightBumper) rotation += ROTATION_SPEED
 
         drive.driveCartesian(
-            -controller.leftY * 0.4,
-            controller.leftX * 0.5,
+            -controller.leftY * Y_SENSITIVITY,
+            controller.leftX * X_SENSITIVITY,
             rotation
         )
     }

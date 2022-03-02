@@ -8,8 +8,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 class Intake : SubsystemBase(), Tabbed {
 
     companion object {
+        // ID of the victor for intake control.
         const val INTAKE_ID = 4
-        const val DEFAULT_POWER = 0.75
+
+        // The default power of the intake motor.
+        var DEFAULT_POWER = 0.75
     }
 
     enum class State {
@@ -26,6 +29,12 @@ class Intake : SubsystemBase(), Tabbed {
     init {
         if (Perseverance.debugMode) {
             tab.addString("State") { state.name }
+            tab.add("Config") {
+                it.addDoubleProperty("Power",
+                    { DEFAULT_POWER },
+                    { d -> DEFAULT_POWER = d }
+                )
+            }
         }
     }
 
