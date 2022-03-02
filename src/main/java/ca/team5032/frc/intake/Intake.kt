@@ -1,6 +1,7 @@
 package ca.team5032.frc.intake
 
 import ca.team5032.frc.Perseverance
+import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.Tabbed
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
 import edu.wpi.first.wpilibj2.command.SubsystemBase
@@ -12,7 +13,7 @@ class Intake : SubsystemBase(), Tabbed {
         const val INTAKE_ID = 4
 
         // The default power of the intake motor.
-        var DEFAULT_POWER = 0.75
+        var DEFAULT_POWER = DoubleProperty("Power", 0.75)
     }
 
     enum class State {
@@ -29,13 +30,9 @@ class Intake : SubsystemBase(), Tabbed {
     init {
         if (Perseverance.debugMode) {
             tab.addString("State") { state.name }
-            tab.add("Config") {
-                it.addDoubleProperty("Power",
-                    { DEFAULT_POWER },
-                    { d -> DEFAULT_POWER = d }
-                )
-            }
         }
+
+        buildConfig(DEFAULT_POWER)
     }
 
     override fun periodic() {
@@ -47,12 +44,12 @@ class Intake : SubsystemBase(), Tabbed {
     }
 
     fun intake() {
-        power = -DEFAULT_POWER
+        power = -DEFAULT_POWER()
         state = State.INTAKING
     }
 
     fun eject() {
-        power = DEFAULT_POWER
+        power = DEFAULT_POWER()
         state = State.EJECTING
     }
 

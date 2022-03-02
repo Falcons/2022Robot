@@ -8,4 +8,10 @@ interface Tabbed {
     val tab: ShuffleboardTab
         get() = Shuffleboard.getTab(this.javaClass.simpleName)
 
+    fun buildConfig(vararg properties: Property<*>) {
+        tab.add("Config") { builder ->
+            properties.asList().forEach { it.add(builder) }
+        }
+    }
+
 }

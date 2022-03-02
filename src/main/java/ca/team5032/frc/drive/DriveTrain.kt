@@ -1,6 +1,7 @@
 package ca.team5032.frc.drive
 
 import ca.team5032.frc.Perseverance
+import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.Tabbed
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
@@ -18,17 +19,19 @@ class DriveTrain : SubsystemBase(), Tabbed {
         const val FRONT_RIGHT_ID = 2
         const val REAR_RIGHT_ID = 3
 
+        // TODO: Look into a generic 'Property' class to represent modifiable properties for subsystems, automatically
+        // TODO: putting them into the Config tab in Shuffleboard.
         // Threshold to consider the robot as moving  (receiving joystick input)
-        const val DEADBAND_THRESHOLD = 0.1
+        var DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
         // Sensitivity for ySpeed cartesian movement. (north-south)
-        const val Y_SENSITIVITY = 0.4
+        var Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 0.4)
         // Sensitivity for xSpeed cartesian movement. (south-west)
-        const val X_SENSITIVITY = 0.5
+        var X_SENSITIVITY = DoubleProperty("X Senstivity", 0.5)
 
         // Constant rotation speed for the robot.
-        const val ROTATION_SPEED = 0.45
+        var ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
         // Magnitude of micro movements done by the dpad.
-        const val MICRO_SPEED = 0.4
+        var MICRO_SPEED = DoubleProperty("Micro Speed", 0.4)
     }
 
     enum class State {
@@ -61,13 +64,15 @@ class DriveTrain : SubsystemBase(), Tabbed {
             tab.addString("State") { state.name }
             tab.add("Mecanum Visualizer") { drive }
         }
+
+        buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
 
     override fun periodic() {
-        if (Perseverance.isDisabled) return
+        if (Perseverance.isDisabled || state == State.AUTONOMOUS) return
 
-        if (abs(controller.leftY) > DEADBAND_THRESHOLD
-            || abs(controller.leftX) > DEADBAND_THRESHOLD
+        if (abs(controller.leftY) > DEADBAND_THRESHOLD()
+            || abs(controller.leftX) > DEADBAND_THRESHOLD()
             || controller.pov != -1) {
             if (state == State.STATIONARY) unlock()
         } else {
@@ -76,7 +81,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
 
         if (controller.pov != -1) {
             drive.drivePolar(
-                MICRO_SPEED,
+                MICRO_SPEED(),
                 controller.pov.toDouble(),
                 0.0
             )
@@ -84,12 +89,12 @@ class DriveTrain : SubsystemBase(), Tabbed {
         }
 
         var rotation = 0.0
-        if (controller.leftBumper) rotation -= ROTATION_SPEED
-        if (controller.rightBumper) rotation += ROTATION_SPEED
+        if (controller.leftBumper) rotation -= ROTATION_SPEED()
+        if (controller.rightBumper) rotation += ROTATION_SPEED()
 
         drive.driveCartesian(
-            -controller.leftY * Y_SENSITIVITY,
-            controller.leftX * X_SENSITIVITY,
+            -controller.leftY * Y_SENSITIVITY(),
+            controller.leftX * X_SENSITIVITY(),
             rotation
         )
     }
