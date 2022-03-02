@@ -26,7 +26,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
         // Sensitivity for ySpeed cartesian movement. (north-south)
         val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 0.4)
         // Sensitivity for xSpeed cartesian movement. (south-west)
-        val X_SENSITIVITY = DoubleProperty("X Senstivity", 0.5)
+        val X_SENSITIVITY = DoubleProperty("X Sensitivity", 0.5)
 
         // Constant rotation speed for the robot.
         val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
