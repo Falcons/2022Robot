@@ -22,7 +22,7 @@ class Intake : SubsystemBase(), Tabbed {
         IDLE
     }
 
-    private val victor = WPI_VictorSPX(INTAKE_ID)
+    private val intakeVictor = WPI_VictorSPX(INTAKE_ID)
 
     var state: State = State.IDLE
     var power = 0.0
@@ -38,7 +38,7 @@ class Intake : SubsystemBase(), Tabbed {
     override fun periodic() {
         if (power == 0.0) state = State.IDLE
 
-        victor.set(power)
+        intakeVictor.set(power)
 
         power = 0.0
     }
