@@ -19,8 +19,6 @@ class DriveTrain : SubsystemBase(), Tabbed {
         const val FRONT_RIGHT_ID = 2
         const val REAR_RIGHT_ID = 3
 
-        // TODO: Look into a generic 'Property' class to represent modifiable properties for subsystems, automatically
-        // TODO: putting them into the Config tab in Shuffleboard.
         // Threshold to consider the robot as moving  (receiving joystick input)
         val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
         // Sensitivity for ySpeed cartesian movement. (north-south)
