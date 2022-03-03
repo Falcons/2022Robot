@@ -42,9 +42,9 @@ class Climb : SubsystemBase(), Tabbed {
 
         if (state == State.IDLE) {
             climbFalcon.setNeutralMode(NeutralMode.Brake)
+        } else {
+            climbFalcon.setNeutralMode(NeutralMode.Coast)
         }
-
-        else { climbFalcon.setNeutralMode(NeutralMode.Coast)}
 
         climbFalcon.set(power)
 
