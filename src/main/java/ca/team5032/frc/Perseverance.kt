@@ -8,6 +8,8 @@ import ca.team5032.frc.intake.EjectCommand
 import ca.team5032.frc.intake.Intake
 import ca.team5032.frc.intake.IntakeCommand
 import ca.team5032.frc.led.LEDSystem
+import ca.team5032.frc.shooter.Shooter
+import ca.team5032.frc.shooter.ShooterCommand
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
@@ -21,6 +23,7 @@ object Perseverance : TimedRobot() {
     val drive = DriveTrain()
     val intake = Intake()
     val climb = Climb()
+    val shooter = Shooter()
 
     val led = LEDSystem()
 
@@ -35,6 +38,7 @@ object Perseverance : TimedRobot() {
         JoystickButton(driveController,XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
         JoystickButton(driveController,XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
 
+        JoystickButton(driveController, XboxController.Button.kBack.value).whenHeld(ShooterCommand())
     }
 
     override fun robotPeriodic() {
