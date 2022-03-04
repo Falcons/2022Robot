@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton
 object Perseverance : TimedRobot() {
 
     val driveController = XboxController(0)
-    //val peripheralController = XboxController(1)
+    val peripheralController = XboxController(1)
 
     val drive = DriveTrain()
     val intake = Intake()
@@ -31,14 +31,14 @@ object Perseverance : TimedRobot() {
 
     override fun robotInit() {
         // Register intake commands.
-        JoystickButton(driveController, XboxController.Button.kX.value).whenHeld(IntakeCommand())
-        JoystickButton(driveController, XboxController.Button.kB.value).whenHeld(EjectCommand())
+        JoystickButton(peripheralController, XboxController.Button.kX.value).whenHeld(IntakeCommand())
+        JoystickButton(peripheralController, XboxController.Button.kB.value).whenHeld(EjectCommand())
 
         // Register climb commands.
-        JoystickButton(driveController,XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
-        JoystickButton(driveController,XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
+        JoystickButton(peripheralController,XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
+        JoystickButton(peripheralController,XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
 
-        JoystickButton(driveController, XboxController.Button.kBack.value).whenHeld(ShooterCommand())
+        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShooterCommand())
     }
 
     override fun robotPeriodic() {

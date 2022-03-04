@@ -13,3 +13,21 @@ class ShooterCommand : CommandBase() {
 
 }
 
+//class TransferUp : CommandBase() {
+//
+//    init {
+//        addRequirements(Perseverance.shooter)
+//    }
+//
+//    override fun execute() = Perseverance.shooter.transferUp()
+//}
+//
+//class TransferDown : CommandBase() {
+//
+//    init {
+//        addRequirements(Perseverance.shooter)
+//    }
+//
+//    override fun execute() = Perseverance.shooter.transferDown()
+//}
+

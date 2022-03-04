@@ -10,7 +10,7 @@ class Intake : SubsystemBase(), Tabbed {
 
     companion object {
         // ID of the victor for intake control.
-        const val INTAKE_ID = 4
+        const val INTAKE_ID = 7
 
         // The default power of the intake motor.
         val DEFAULT_POWER = DoubleProperty("Power", 0.75)

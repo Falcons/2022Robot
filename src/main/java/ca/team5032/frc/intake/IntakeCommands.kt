@@ -9,7 +9,10 @@ class IntakeCommand : CommandBase() {
         addRequirements(Perseverance.intake)
     }
 
-    override fun execute() = Perseverance.intake.intake()
+    override fun execute() {
+        Perseverance.intake.intake()
+        Perseverance.shooter.transferUp()
+    }
 
 }
 
@@ -19,6 +22,9 @@ class EjectCommand : CommandBase() {
         addRequirements(Perseverance.intake)
     }
 
-    override fun execute() = Perseverance.intake.eject()
+    override fun execute() {
+        Perseverance.intake.eject()
+        Perseverance.shooter.transferDown()
+    }
 
 }

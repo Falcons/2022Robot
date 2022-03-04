@@ -7,6 +7,7 @@ class ClimbUpCommand: CommandBase() {
 
     init {
         addRequirements(Perseverance.climb)
+
     }
 
     override fun execute() = Perseverance.climb.climbUp()
