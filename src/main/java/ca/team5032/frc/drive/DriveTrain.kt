@@ -38,6 +38,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
 
         // Constant rotation speed for the robot.
         val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
+        val FAST_ROTATION = DoubleProperty("Rotation Speed", 0.65)
         // Magnitude of micro movements done by the dpad.
         val MICRO_SPEED = DoubleProperty("Micro Speed", 0.5)
     }
@@ -119,6 +120,8 @@ class DriveTrain : SubsystemBase(), Tabbed {
         var rotation = 0.0
         if (controller.leftBumper) rotation -= ROTATION_SPEED()
         if (controller.rightBumper) rotation += ROTATION_SPEED()
+        if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION()
+        if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION()
 
         val additionalMult = if (controller.xButton) 1.5 else 1.0
 

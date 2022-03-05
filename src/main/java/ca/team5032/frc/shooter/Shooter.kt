@@ -20,7 +20,7 @@ class Shooter : SubsystemBase(), Tabbed {
         val DEFAULT_POWER = DoubleProperty("Power", 0.25)
 
         // Shooter falcon set values
-        //val MAX_POWER = 0.25
+        //val MAX_POWER = 0.50
         val LOW_POWER = 0.30
         val HIGH_POWER = 0.40
     }
