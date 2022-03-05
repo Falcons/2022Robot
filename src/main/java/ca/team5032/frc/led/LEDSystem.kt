@@ -17,17 +17,25 @@ class LEDSystem : SubsystemBase(), Tabbed {
 
     }
 
-    val blinkin = Spark(9)
+    val blinkin = Spark(0)
 
     init {
         buildConfig(DEFAULT_COLOUR)
     }
 
     override fun periodic() {
-        if (Perseverance.drive.state == DriveTrain.State.DRIVING) {
-            blinkin.set(.91)
+        if (!Perseverance.climb.bottomSensor.get()) {
+            if (!Perseverance.climb.topSensor.get()) {
+                blinkin.set(.73)
+            } else {
+                blinkin.set(.91)
+            }
         } else {
-            blinkin.set(DEFAULT_COLOUR())
+            if (!Perseverance.climb.topSensor.get()) {
+                blinkin.set(.61)
+            } else {
+                blinkin.set(.93)
+            }
         }
     }
 

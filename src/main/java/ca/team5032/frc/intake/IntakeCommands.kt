@@ -11,7 +11,7 @@ class IntakeCommand : CommandBase() {
 
     override fun execute() {
         Perseverance.intake.intake()
-        Perseverance.shooter.transferUp()
+        //Perseverance.shooter.transferUp()
     }
 
 }
@@ -24,7 +24,7 @@ class EjectCommand : CommandBase() {
 
     override fun execute() {
         Perseverance.intake.eject()
-        Perseverance.shooter.transferDown()
+        //Perseverance.shooter.transferDown()
     }
 
 }

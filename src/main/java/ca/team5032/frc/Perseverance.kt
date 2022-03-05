@@ -8,8 +8,9 @@ import ca.team5032.frc.intake.EjectCommand
 import ca.team5032.frc.intake.Intake
 import ca.team5032.frc.intake.IntakeCommand
 import ca.team5032.frc.led.LEDSystem
+import ca.team5032.frc.shooter.ShootHigh
+import ca.team5032.frc.shooter.ShootLow
 import ca.team5032.frc.shooter.Shooter
-import ca.team5032.frc.shooter.ShooterCommand
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
@@ -20,6 +21,7 @@ object Perseverance : TimedRobot() {
     val driveController = XboxController(0)
     val peripheralController = XboxController(1)
 
+
     val drive = DriveTrain()
     val intake = Intake()
     val climb = Climb()
@@ -29,16 +31,21 @@ object Perseverance : TimedRobot() {
 
     const val debugMode = true
 
+
     override fun robotInit() {
         // Register intake commands.
         JoystickButton(peripheralController, XboxController.Button.kX.value).whenHeld(IntakeCommand())
         JoystickButton(peripheralController, XboxController.Button.kB.value).whenHeld(EjectCommand())
 
         // Register climb commands.
-        JoystickButton(peripheralController,XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
-        JoystickButton(peripheralController,XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
+        JoystickButton(peripheralController, XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
+        JoystickButton(peripheralController, XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
 
-        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShooterCommand())
+        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShootHigh())
+        JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value).whenHeld(ShootLow())
+
+
+
     }
 
     override fun robotPeriodic() {

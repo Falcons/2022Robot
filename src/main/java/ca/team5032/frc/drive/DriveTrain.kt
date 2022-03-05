@@ -29,7 +29,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
         // Constant rotation speed for the robot.
         val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
         // Magnitude of micro movements done by the dpad.
-        val MICRO_SPEED = DoubleProperty("Micro Speed", 0.4)
+        val MICRO_SPEED = DoubleProperty("Micro Speed", 0.5)
     }
 
     enum class State {
@@ -49,6 +49,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
         WPI_TalonFX(FRONT_RIGHT_ID),
         WPI_TalonFX(REAR_RIGHT_ID)
     )
+
 
     private val isInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD()
@@ -93,9 +94,11 @@ class DriveTrain : SubsystemBase(), Tabbed {
         if (controller.leftBumper) rotation -= ROTATION_SPEED()
         if (controller.rightBumper) rotation += ROTATION_SPEED()
 
+        val additionalMult = if (controller.xButton) 1.5 else 1.0
+
         drive.driveCartesian(
-            -controller.leftY * Y_SENSITIVITY(),
-            controller.leftX * X_SENSITIVITY(),
+            -controller.leftY * Y_SENSITIVITY() * additionalMult,
+            controller.leftX * X_SENSITIVITY() * additionalMult,
             rotation
         )
     }
