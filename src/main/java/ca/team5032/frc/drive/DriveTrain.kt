@@ -10,6 +10,16 @@ import edu.wpi.first.wpilibj.drive.MecanumDrive
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import kotlin.math.abs
 
+enum class DirectionX(val multiplier: Int) {
+    FORWARD(1),
+    BACKWARD(-1)
+}
+
+enum class DirectionYZ(val multiplier: Int) {
+    LEFT(-1),
+    RIGHT(1)
+}
+
 class DriveTrain : SubsystemBase(), Tabbed {
 
     companion object {
@@ -33,12 +43,15 @@ class DriveTrain : SubsystemBase(), Tabbed {
     }
 
     enum class State {
-        AUTONOMOUS,
+        AUTONOMOUS, // TODO: Proper autonomous mode for all subsystems, locks normal input and only controllable through auto.
         DRIVING,
         STATIONARY
     }
 
+    data class AutoSpeeds(val ySpeed: Double, val xSpeed: Double, val zRotation: Double)
+
     var state: State = State.STATIONARY
+    var autoSpeeds = AutoSpeeds(0.0, 0.0, 0.0)
 
     private val controller: XboxController = Perseverance.driveController
 
@@ -72,7 +85,20 @@ class DriveTrain : SubsystemBase(), Tabbed {
         buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
 
+    fun auto(speeds: AutoSpeeds) {
+        if (state != State.AUTONOMOUS) return
+
+        autoSpeeds = speeds
+    }
+
     override fun periodic() {
+        if (state == State.AUTONOMOUS) {
+            drive.driveCartesian(autoSpeeds.ySpeed, autoSpeeds.xSpeed, autoSpeeds.zRotation)
+
+            autoSpeeds = AutoSpeeds(0.0, 0.0, 0.0)
+            return
+        }
+
         if (Perseverance.isDisabled || state == State.AUTONOMOUS) return
 
         if (isInput) {

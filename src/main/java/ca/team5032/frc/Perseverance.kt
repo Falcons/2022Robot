@@ -1,5 +1,6 @@
 package ca.team5032.frc
 
+import ca.team5032.frc.auto.DriveBackwardsCommand
 import ca.team5032.frc.climb.Climb
 import ca.team5032.frc.climb.ClimbDownCommand
 import ca.team5032.frc.climb.ClimbUpCommand
@@ -50,6 +51,18 @@ object Perseverance : TimedRobot() {
 
     override fun robotPeriodic() {
         CommandScheduler.getInstance().run()
+    }
+
+    private val autoCommand = DriveBackwardsCommand()
+
+    override fun autonomousInit() {
+        drive.state = DriveTrain.State.AUTONOMOUS
+        autoCommand.schedule()
+    }
+    
+    override fun autonomousExit() {
+        drive.state = DriveTrain.State.STATIONARY
+        autoCommand.cancel()
     }
 
 }
