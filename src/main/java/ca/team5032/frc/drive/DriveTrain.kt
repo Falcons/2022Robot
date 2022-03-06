@@ -100,13 +100,13 @@ class DriveTrain : SubsystemBase(), Tabbed {
             return
         }
 
-        if (Perseverance.isDisabled || state == State.AUTONOMOUS) return
-
         if (isInput) {
             if (state == State.STATIONARY) unlock()
         } else {
             if (state == State.DRIVING) lock()
         }
+
+        if (Perseverance.isDisabled || state == State.AUTONOMOUS) return
 
         if (controller.pov != -1) {
             drive.drivePolar(
@@ -123,7 +123,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
         if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION()
         if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION()
 
-        val additionalMult = if (controller.xButton) 1.5 else 1.0
+        val additionalMult = if (controller.xButton) 1.65 else 1.0
 
         drive.driveCartesian(
             -controller.leftY * Y_SENSITIVITY() * additionalMult,

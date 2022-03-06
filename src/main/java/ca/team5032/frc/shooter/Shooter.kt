@@ -81,6 +81,10 @@ class Shooter : SubsystemBase(), Tabbed {
         state = State.SHOOTING
     }
 
+    fun shootAuto() {
+        power = -0.37
+    }
+
     fun shootLow() {
         power = -LOW_POWER
         state = State.SHOOTING

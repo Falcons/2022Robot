@@ -16,7 +16,7 @@ class Climb : SubsystemBase(), Tabbed {
         const val CLIMB_ID = 4
 
         // Default power for climb
-        val DEFAULT_POWER = DoubleProperty("Power", 0.20)
+        val DEFAULT_POWER = DoubleProperty("Power", 0.30)
     }
 
     enum class State {

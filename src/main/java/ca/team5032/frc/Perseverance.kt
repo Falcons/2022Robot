@@ -56,7 +56,6 @@ object Perseverance : TimedRobot() {
     private val autoCommand = DriveBackwardsCommand()
 
     override fun autonomousInit() {
-        drive.state = DriveTrain.State.AUTONOMOUS
         autoCommand.schedule()
     }
     
