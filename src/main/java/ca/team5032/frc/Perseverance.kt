@@ -22,7 +22,6 @@ object Perseverance : TimedRobot() {
     val driveController = XboxController(0)
     val peripheralController = XboxController(1)
 
-
     val drive = DriveTrain()
     val intake = Intake()
     val climb = Climb()
@@ -31,7 +30,6 @@ object Perseverance : TimedRobot() {
     val led = LEDSystem()
 
     const val debugMode = true
-
 
     override fun robotInit() {
         // Register intake commands.
@@ -44,9 +42,6 @@ object Perseverance : TimedRobot() {
 
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShootHigh())
         JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value).whenHeld(ShootLow())
-
-
-
     }
 
     override fun robotPeriodic() {
