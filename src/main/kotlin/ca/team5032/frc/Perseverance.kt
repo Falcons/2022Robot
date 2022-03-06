@@ -1,6 +1,5 @@
 package ca.team5032.frc
 
-import ca.team5032.frc.auto.DriveBackwardsCommand
 import ca.team5032.frc.climb.Climb
 import ca.team5032.frc.climb.ClimbDownCommand
 import ca.team5032.frc.climb.ClimbUpCommand
@@ -40,6 +39,7 @@ object Perseverance : TimedRobot() {
         JoystickButton(peripheralController, XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
         JoystickButton(peripheralController, XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
 
+        // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShootHigh())
         JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value).whenHeld(ShootLow())
     }
@@ -48,15 +48,10 @@ object Perseverance : TimedRobot() {
         CommandScheduler.getInstance().run()
     }
 
-    private val autoCommand = DriveBackwardsCommand()
-
     override fun autonomousInit() {
-        autoCommand.schedule()
     }
     
     override fun autonomousExit() {
-        drive.state = DriveTrain.State.STATIONARY
-        autoCommand.cancel()
     }
 
 }
