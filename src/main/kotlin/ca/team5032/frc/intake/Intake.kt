@@ -2,6 +2,7 @@ package ca.team5032.frc.intake
 
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.DoubleProperty
+import ca.team5032.frc.utils.INTAKE_ID
 import ca.team5032.frc.utils.Tabbed
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
 import edu.wpi.first.wpilibj2.command.SubsystemBase
@@ -9,9 +10,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 class Intake : SubsystemBase(), Tabbed {
 
     companion object {
-        // ID of the victor for intake control.
-        const val INTAKE_ID = 7
-
         // The default power of the intake motor.
         val DEFAULT_POWER = DoubleProperty("Power", 0.75)
     }

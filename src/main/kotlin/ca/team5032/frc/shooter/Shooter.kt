@@ -3,6 +3,8 @@ package ca.team5032.frc.shooter
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.intake.Intake
 import ca.team5032.frc.utils.DoubleProperty
+import ca.team5032.frc.utils.SHOOTER_ID
+import ca.team5032.frc.utils.TRANSFER_ID
 import ca.team5032.frc.utils.Tabbed
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
@@ -12,10 +14,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 class Shooter : SubsystemBase(), Tabbed {
 
     companion object {
-        // ID of the victor for intake control.
-        const val SHOOTER_ID = 5
-        const val TRANSFER_ID = 6
-
         // The default power of the intake motor.
         val DEFAULT_POWER = DoubleProperty("Power", 0.25)
 

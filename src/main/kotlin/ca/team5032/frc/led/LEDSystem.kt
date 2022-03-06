@@ -2,6 +2,7 @@ package ca.team5032.frc.led
 
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.drive.DriveTrain
+import ca.team5032.frc.utils.BLINKIN_ID
 import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.Tabbed
 import edu.wpi.first.wpilibj.motorcontrol.Spark
@@ -11,13 +12,11 @@ class LEDSystem : SubsystemBase(), Tabbed {
 
     companion object {
 
-        const val BLINKIN_ID = 9
-
         val DEFAULT_COLOUR = DoubleProperty("Default Colour", -0.93)
 
     }
 
-    val blinkin = Spark(0)
+    val blinkin = Spark(BLINKIN_ID)
 
     init {
         buildConfig(DEFAULT_COLOUR)

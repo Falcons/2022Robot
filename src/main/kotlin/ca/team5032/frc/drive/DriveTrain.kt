@@ -1,8 +1,7 @@
 package ca.team5032.frc.drive
 
 import ca.team5032.frc.Perseverance
-import ca.team5032.frc.utils.DoubleProperty
-import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.wpilibj.XboxController
@@ -23,12 +22,6 @@ enum class DirectionYZ(val multiplier: Int) {
 class DriveTrain : SubsystemBase(), Tabbed {
 
     companion object {
-        // IDs for the 4 drive Falcon500s.
-        const val FRONT_LEFT_ID = 0
-        const val REAR_LEFT_ID = 1
-        const val FRONT_RIGHT_ID = 2
-        const val REAR_RIGHT_ID = 3
-
         // Threshold to consider the robot as moving  (receiving joystick input)
         val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
         // Sensitivity for ySpeed cartesian movement. (north-south)
