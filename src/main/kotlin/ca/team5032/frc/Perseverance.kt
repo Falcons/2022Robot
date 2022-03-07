@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 
-object Perseverance : TimedRobot() {
+object Perseverance : TimedRobot(0.02) {
 
     val driveController = XboxController(0)
     val peripheralController = XboxController(1)

@@ -51,7 +51,6 @@ class DriveTrain : SubsystemBase(), Tabbed {
         WPI_TalonFX(REAR_RIGHT_ID)
     )
 
-
     private val isInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD()
                 || abs(controller.leftX) > DEADBAND_THRESHOLD()
