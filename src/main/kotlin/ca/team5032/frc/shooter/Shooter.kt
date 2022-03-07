@@ -6,25 +6,22 @@ import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.SHOOTER_ID
 import ca.team5032.frc.utils.TRANSFER_ID
 import ca.team5032.frc.utils.Tabbed
+import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
+import edu.wpi.first.math.controller.BangBangController
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 
 class Shooter : SubsystemBase(), Tabbed {
 
     companion object {
-        // The default power of the intake motor.
-        val DEFAULT_POWER = DoubleProperty("Power", 0.25)
-
-        // Shooter falcon set values
-        //val MAX_POWER = 0.50
-        val LOW_POWER = 0.30
-        val HIGH_POWER = 0.40
+        val TARGET_RPM = DoubleProperty("Target RPM", 1000.0)
     }
 
     enum class State {
-        SHOOTING,
+        READY,
+        RAMPING,
         IDLE
     }
 
@@ -33,69 +30,34 @@ class Shooter : SubsystemBase(), Tabbed {
         TRANSFER_DOWN,
         IDLE
     }
+
     private val controller: XboxController = Perseverance.peripheralController
+
     private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
     private val transferVictor = WPI_VictorSPX(TRANSFER_ID)
 
     var state: State = State.IDLE
     var transferState: TransferState = TransferState.IDLE
-    var power = 0.0
-    var transferPower = 0.0
+
+    private val bangBangController = BangBangController()
 
     init {
-        if (Perseverance.debugMode) {
-            tab.addString("State") { state.name }
-        }
+        // Set the shooter falcon to coast to prevent the brake from fighting against BangBang.
+        shooterFalcon.setNeutralMode(NeutralMode.Coast)
 
-        buildConfig(DEFAULT_POWER)
+        buildConfig(TARGET_RPM)
     }
 
     override fun periodic() {
-        if (controller.pov == 270) {
-            transferUp()
-        }
-        if (controller.pov == 90) {
-            transferDown()
-        }
+        // TODO: BangBang + FF
+        // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/bang-bang.html
+        // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/feedforward.html#feedforward-control-in-wpilib
 
-        if (power == 0.0) state = State.IDLE
-
-        shooterFalcon.set(power)
-        transferVictor.set(transferPower)
-
-//        var shooterPower = (controller.rightTriggerAxis/10) + MAX_POWER
-//        if (controller.rightTriggerAxis >= 0.05) {
-//            shooterFalcon.set(shooterPower)
-//            state = State.SHOOTING
-//        }
-//        else state = State.IDLE
-
-        power = 0.0
-        transferPower = 0.0
+        // bangBangController.calculate(getRPM(), TARGET_RPM())
     }
 
-    fun shootHigh() {
-        power = -HIGH_POWER
-        state = State.SHOOTING
-    }
-
-    fun shootAuto() {
-        power = -0.37
-    }
-
-    fun shootLow() {
-        power = -LOW_POWER
-        state = State.SHOOTING
-    }
-
-    fun transferUp() {
-        transferPower = -Intake.DEFAULT_POWER()
-        transferState = TransferState.TRANSFER_UP
-    }
-
-    fun transferDown(){
-        transferPower = Intake.DEFAULT_POWER()
-        transferState = TransferState.TRANSFER_DOWN
-    }
+    // units per second -> rotations per minute.
+    // 2048 units = 1 rotation.
+    private fun getRPM() = shooterFalcon.sensorCollection.integratedSensorPosition / 2048 * 60
 
 }

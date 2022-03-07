@@ -3,23 +3,15 @@ package ca.team5032.frc.shooter
 import ca.team5032.frc.Perseverance
 import edu.wpi.first.wpilibj2.command.CommandBase
 
-class ShootHigh : CommandBase() {
+class ShootCommand : CommandBase() {
 
     init {
         addRequirements(Perseverance.shooter)
     }
 
-    override fun execute() = Perseverance.shooter.shootHigh()
+    override fun execute() {
 
-}
-
-class ShootLow : CommandBase() {
-
-    init {
-        addRequirements(Perseverance.shooter)
     }
-
-    override fun execute() = Perseverance.shooter.shootLow()
 
 }
 

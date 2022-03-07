@@ -8,8 +8,7 @@ import ca.team5032.frc.intake.EjectCommand
 import ca.team5032.frc.intake.Intake
 import ca.team5032.frc.intake.IntakeCommand
 import ca.team5032.frc.led.LEDSystem
-import ca.team5032.frc.shooter.ShootHigh
-import ca.team5032.frc.shooter.ShootLow
+import ca.team5032.frc.shooter.ShootCommand
 import ca.team5032.frc.shooter.Shooter
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
@@ -39,9 +38,7 @@ object Perseverance : TimedRobot() {
         JoystickButton(peripheralController, XboxController.Button.kY.value).whenHeld(ClimbUpCommand())
         JoystickButton(peripheralController, XboxController.Button.kA.value).whenHeld(ClimbDownCommand())
 
-        // Register shooter commands.
-        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShootHigh())
-        JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value).whenHeld(ShootLow())
+        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value).whenHeld(ShootCommand())
     }
 
     override fun robotPeriodic() {
