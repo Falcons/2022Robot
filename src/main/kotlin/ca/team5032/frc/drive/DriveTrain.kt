@@ -9,16 +9,10 @@ import edu.wpi.first.wpilibj.drive.MecanumDrive
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import kotlin.math.abs
 
-enum class DirectionX(val multiplier: Int) {
-    FORWARD(1),
-    BACKWARD(-1)
-}
-
-enum class DirectionYZ(val multiplier: Int) {
-    LEFT(-1),
-    RIGHT(1)
-}
-
+// TODO: Add kinematics and odometry for pose estimation during autonomous.
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/mecanumbot/Drivetrain.java
+// https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-odometry.html
+// https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-kinematics.html
 class DriveTrain : SubsystemBase(), Tabbed {
 
     companion object {
