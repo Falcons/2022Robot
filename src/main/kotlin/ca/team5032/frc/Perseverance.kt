@@ -10,12 +10,13 @@ import ca.team5032.frc.intake.IntakeCommand
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.shooter.ShootCommand
 import ca.team5032.frc.shooter.Shooter
+import ca.team5032.frc.transfer.Transfer
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 
-object Perseverance : TimedRobot(0.02) {
+object Perseverance : TimedRobot() {
 
     val driveController = XboxController(0)
     val peripheralController = XboxController(1)
@@ -23,6 +24,7 @@ object Perseverance : TimedRobot(0.02) {
     val drive = DriveTrain()
     val intake = Intake()
     val climb = Climb()
+    val transfer = Transfer()
     val shooter = Shooter()
 
     val led = LEDSystem()

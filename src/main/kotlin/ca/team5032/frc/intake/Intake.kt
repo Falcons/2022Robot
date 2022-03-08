@@ -42,12 +42,12 @@ class Intake : SubsystemBase(), Tabbed {
     }
 
     fun intake() {
-        power = -DEFAULT_POWER()
+        power = -DEFAULT_POWER.value
         state = State.INTAKING
     }
 
     fun eject() {
-        power = DEFAULT_POWER()
+        power = DEFAULT_POWER.value
         state = State.EJECTING
     }
 

@@ -65,16 +65,13 @@ class Climb : SubsystemBase(), Tabbed {
         power = 0.0
     }
 
-    val sensorValue: Boolean
-        get() = bottomSensor.get()
-
     fun climbUp() {
-        power = DEFAULT_POWER()
+        power = DEFAULT_POWER.value
         state = State.UP
     }
 
     fun climbDown() {
-        power = -DEFAULT_POWER()
+        power = -DEFAULT_POWER.value
         state = State.DOWN
     }
 

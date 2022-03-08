@@ -52,8 +52,8 @@ class DriveTrain : SubsystemBase(), Tabbed {
     )
 
     private val isInput: Boolean
-        get() = abs(controller.leftY) > DEADBAND_THRESHOLD()
-                || abs(controller.leftX) > DEADBAND_THRESHOLD()
+        get() = abs(controller.leftY) > DEADBAND_THRESHOLD.value
+                || abs(controller.leftX) > DEADBAND_THRESHOLD.value
                 || controller.pov != -1
 
     init {
@@ -96,7 +96,7 @@ class DriveTrain : SubsystemBase(), Tabbed {
 
         if (controller.pov != -1) {
             drive.drivePolar(
-                MICRO_SPEED(),
+                MICRO_SPEED.value,
                 controller.pov.toDouble(),
                 0.0
             )
@@ -104,16 +104,16 @@ class DriveTrain : SubsystemBase(), Tabbed {
         }
 
         var rotation = 0.0
-        if (controller.leftBumper) rotation -= ROTATION_SPEED()
-        if (controller.rightBumper) rotation += ROTATION_SPEED()
-        if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION()
-        if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION()
+        if (controller.leftBumper) rotation -= ROTATION_SPEED.value
+        if (controller.rightBumper) rotation += ROTATION_SPEED.value
+        if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION.value
+        if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION.value
 
         val additionalMult = if (controller.xButton) 1.65 else 1.0
 
         drive.driveCartesian(
-            -controller.leftY * Y_SENSITIVITY() * additionalMult,
-            controller.leftX * X_SENSITIVITY() * additionalMult,
+            -controller.leftY * Y_SENSITIVITY.value * additionalMult,
+            controller.leftX * X_SENSITIVITY.value * additionalMult,
             rotation
         )
     }

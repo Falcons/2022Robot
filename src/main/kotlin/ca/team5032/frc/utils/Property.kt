@@ -4,8 +4,6 @@ import edu.wpi.first.util.sendable.SendableBuilder
 
 sealed class Property<T>(val name: String, var value: T) {
 
-    operator fun invoke() = value
-
     abstract fun add(builder: SendableBuilder)
 
 }
