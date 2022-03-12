@@ -1,6 +1,7 @@
 package ca.team5032.frc.utils
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import java.util.function.Consumer
 
 enum class ControlState {
     MANUAL,
@@ -8,7 +9,11 @@ enum class ControlState {
     IDLE
 }
 
-abstract class Subsystem<T>(defaultState: T) : SubsystemBase() {
+data class StateTransition<T : Any>(val from: T, val to: T, val subsystem: Subsystem<T>)
+
+abstract class Subsystem<T : Any>(defaultState: T) : SubsystemBase() {
+
+    private val transitionTasks: MutableList<Consumer<StateTransition<T>>> = mutableListOf()
 
     /**
      * Represents the current state of the subsystem, will be overridden during autonomous.
@@ -17,12 +22,24 @@ abstract class Subsystem<T>(defaultState: T) : SubsystemBase() {
      *
      * State is applied to control the subsystem and does not necessarily represent the true state of the component.
      */
-    private var state: T = defaultState
+    var state: T = defaultState
 
     /**
      * The control state represents how the subsystem is being controlled, either manually, automatically, or
      * the component is sitting idle.
      */
     private var controlState: ControlState = ControlState.IDLE
+
+    protected fun setState(newState: T): Set<Subsystem<T>> {
+        val transition = StateTransition(state, newState, this)
+        transitionTasks.forEach { it.accept(transition) }
+        transitionTasks.clear()
+
+        print("Changing state from ${state.javaClass.simpleName} to ${newState.javaClass.simpleName}")
+        state = newState
+
+        // Returns the set for chaining setting states with commands.
+        return setOf(this)
+    }
 
 }

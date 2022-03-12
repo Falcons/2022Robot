@@ -1,7 +1,7 @@
 package ca.team5032.frc.led
 
 import ca.team5032.frc.Perseverance
-import ca.team5032.frc.drive.DriveTrain
+import ca.team5032.frc.subsystems.Shooter.State.*
 import ca.team5032.frc.utils.BLINKIN_ID
 import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.Tabbed
@@ -16,25 +16,17 @@ class LEDSystem : SubsystemBase(), Tabbed {
 
     }
 
-    val blinkin = Spark(BLINKIN_ID)
+    private val blinkin = Spark(BLINKIN_ID)
 
     init {
         buildConfig(DEFAULT_COLOUR)
     }
 
     override fun periodic() {
-        if (!Perseverance.climb.bottomSensor.get()) {
-            if (!Perseverance.climb.topSensor.get()) {
-                blinkin.set(.73)
-            } else {
-                blinkin.set(.91)
-            }
-        } else {
-            if (!Perseverance.climb.topSensor.get()) {
-                blinkin.set(.61)
-            } else {
-                blinkin.set(.93)
-            }
+        when (Perseverance.shooter.state) {
+            is RampingUp -> blinkin.set(.91)
+            is AtSpeed -> blinkin.set(.73)
+            is Idle -> blinkin.set(-.39)
         }
     }
 

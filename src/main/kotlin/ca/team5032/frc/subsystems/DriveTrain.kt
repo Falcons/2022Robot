@@ -1,19 +1,19 @@
-package ca.team5032.frc.drive
+package ca.team5032.frc.subsystems
 
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
+import edu.wpi.first.math.filter.SlewRateLimiter
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.drive.MecanumDrive
-import edu.wpi.first.wpilibj2.command.SubsystemBase
 import kotlin.math.abs
 
 // TODO: Add kinematics and odometry for pose estimation during autonomous.
 // https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/mecanumbot/Drivetrain.java
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-odometry.html
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-kinematics.html
-class DriveTrain : SubsystemBase(), Tabbed {
+class DriveTrain : Subsystem<DriveTrain.State>(State.Idle), Tabbed {
 
     companion object {
         // Threshold to consider the robot as moving  (receiving joystick input)
@@ -30,16 +30,11 @@ class DriveTrain : SubsystemBase(), Tabbed {
         val MICRO_SPEED = DoubleProperty("Micro Speed", 0.5)
     }
 
-    enum class State {
-        AUTONOMOUS, // TODO: Proper autonomous mode for all subsystems, locks normal input and only controllable through auto.
-        DRIVING,
-        STATIONARY
+    sealed class State {
+        object Autonomous : State() // TODO: Proper autonomous mode for all subsystems, locks normal input and only controllable through auto.
+        object Driving : State()
+        object Idle : State()
     }
-
-    data class AutoSpeeds(val ySpeed: Double, val xSpeed: Double, val zRotation: Double)
-
-    var state: State = State.STATIONARY
-    var autoSpeeds = AutoSpeeds(0.0, 0.0, 0.0)
 
     private val controller: XboxController = Perseverance.driveController
 
@@ -51,6 +46,10 @@ class DriveTrain : SubsystemBase(), Tabbed {
         WPI_TalonFX(REAR_RIGHT_ID)
     )
 
+    private val ySpeedRateLimiter = SlewRateLimiter(0.5)
+    private val xSpeedRateLimiter = SlewRateLimiter(0.5)
+    private val zRotationRateLimiter = SlewRateLimiter(0.5)
+
     private val isInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD.value
                 || abs(controller.leftX) > DEADBAND_THRESHOLD.value
@@ -60,39 +59,23 @@ class DriveTrain : SubsystemBase(), Tabbed {
         falcons[2].inverted = true
         falcons[3].inverted = true
 
+        falcons.forEach { it.setNeutralMode(NeutralMode.Brake) }
+
         drive = MecanumDrive(
             falcons[0], falcons[1], falcons[2], falcons[3]
         )
 
-        if (Perseverance.debugMode) {
-            tab.addString("State") { state.name }
-            tab.add("Mecanum Visualizer") { drive }
-        }
-
         buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
 
-    fun auto(speeds: AutoSpeeds) {
-        if (state != State.AUTONOMOUS) return
-
-        autoSpeeds = speeds
-    }
-
     override fun periodic() {
-        if (state == State.AUTONOMOUS) {
-            drive.driveCartesian(autoSpeeds.ySpeed, autoSpeeds.xSpeed, autoSpeeds.zRotation)
-
-            autoSpeeds = AutoSpeeds(0.0, 0.0, 0.0)
-            return
-        }
-
         if (isInput) {
-            if (state == State.STATIONARY) unlock()
+            setState(State.Driving)
         } else {
-            if (state == State.DRIVING) lock()
+            setState(State.Idle)
         }
 
-        if (Perseverance.isDisabled || state == State.AUTONOMOUS) return
+        if (Perseverance.isDisabled) return
 
         if (controller.pov != -1) {
             drive.drivePolar(
@@ -103,11 +86,11 @@ class DriveTrain : SubsystemBase(), Tabbed {
             return
         }
 
-        var rotation = 0.0
-        if (controller.leftBumper) rotation -= ROTATION_SPEED.value
-        if (controller.rightBumper) rotation += ROTATION_SPEED.value
-        if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION.value
-        if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION.value
+        val rotation = controller.rightX * ROTATION_SPEED.value
+//        if (controller.leftBumper) rotation -= ROTATION_SPEED.value
+//        if (controller.rightBumper) rotation += ROTATION_SPEED.value
+//        if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION.value
+//        if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION.value
 
         val additionalMult = if (controller.xButton) 1.65 else 1.0
 
@@ -116,22 +99,6 @@ class DriveTrain : SubsystemBase(), Tabbed {
             controller.leftX * X_SENSITIVITY.value * additionalMult,
             rotation
         )
-    }
-
-    /**
-     * Unlocks the drivetrain, allowing the robot to move around freely.
-     */
-    private fun unlock() {
-        falcons.forEach { it.setNeutralMode(NeutralMode.Coast) }
-        state = State.DRIVING
-    }
-
-    /**
-     * Locks the drivetrain, preventing the robot from moving and making any impact less extreme.
-     */
-    private fun lock() {
-        falcons.forEach { it.setNeutralMode(NeutralMode.Brake) }
-        state = State.STATIONARY
     }
 
 }
