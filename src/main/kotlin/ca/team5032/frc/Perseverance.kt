@@ -1,5 +1,6 @@
 package ca.team5032.frc
 
+import ca.team5032.frc.commands.*
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.wpilibj.TimedRobot
@@ -36,108 +37,25 @@ object Perseverance : TimedRobot(0.02) {
     private fun registerCommands() {
         // Register intake commands.
         JoystickButton(peripheralController, XboxController.Button.kX.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(intake)
-                }
-
-                override fun initialize() {
-                    intake.intake()
-                }
-
-                override fun cancel() {
-                    intake.stop()
-                }
-            })
+            .whenHeld(IntakeInCommand())
         JoystickButton(peripheralController, XboxController.Button.kB.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(intake)
-                }
-
-                override fun initialize() {
-                    intake.eject()
-                }
-
-                override fun cancel() {
-                    intake.stop()
-                }
-            })
+            .whenHeld(IntakeOutCommand())
 
         // Register climb commands.
         JoystickButton(peripheralController, XboxController.Button.kY.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(climb)
-                }
-
-                override fun initialize() {
-                    climb.up()
-                }
-
-                override fun cancel() {
-                    climb.stop()
-                }
-            })
+            .whenHeld(ClimbUpCommand())
         JoystickButton(peripheralController, XboxController.Button.kA.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(climb)
-                }
-
-                override fun initialize() {
-                    climb.down()
-                }
-
-                override fun cancel() {
-                    climb.stop()
-                }
-            })
+            .whenHeld(ClimbDownCommand())
 
         // Register transfer commands.
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(transfer)
-                }
-
-                override fun initialize() {
-                    transfer.up()
-                }
-
-                override fun cancel() {
-                    transfer.stop()
-                }
-            })
+            .whenHeld(TransferUpCommand())
         JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(transfer)
-                }
+            .whenHeld(TransferDownCommand())
 
-                override fun initialize() {
-                    transfer.up()
-                }
-
-                override fun cancel() {
-                    transfer.stop()
-                }
-            })
-
+        // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kBack.value)
-            .whenHeld(object : CommandBase() {
-                init {
-                    addRequirements(shooter)
-                }
-
-                override fun initialize() {
-                    shooter.shoot(Shooter.TARGET_RPM.value)
-                }
-
-                override fun cancel() {
-                    shooter.stop()
-                }
-            })
+            .whenHeld(ShooterToRPMCommand())
     }
 
 }

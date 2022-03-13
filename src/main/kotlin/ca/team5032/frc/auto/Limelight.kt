@@ -91,7 +91,7 @@ class Limelight: Subsystem<Limelight.State>(State.Idle) {
         state.let {
             when (it) {
                 is State.Targetting -> {
-                    active()
+                    cameraMode = CameraMode.Processing
                     ledMode = LEDMode.On
                 }
                 is State.OnTarget -> ledMode = LEDMode.Blink
@@ -105,10 +105,6 @@ class Limelight: Subsystem<Limelight.State>(State.Idle) {
     private fun drive() {
         ledMode = LEDMode.Off
         cameraMode = CameraMode.Drive
-    }
-
-    private fun active() {
-        cameraMode = CameraMode.Processing
     }
 
 }
