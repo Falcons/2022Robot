@@ -16,6 +16,8 @@ const val CLIMB_ID = 4
 const val SHOOTER_ID = 5
 // ID of the transfer victor.
 const val TRANSFER_ID = 6
+const val TRANSFER_SENSOR_ID = 3
 
 // ID of the intake victor.
 const val INTAKE_ID = 7
+const val INTAKE_SENSOR_ID = 2

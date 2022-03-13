@@ -1,10 +1,9 @@
 package ca.team5032.frc.subsystems
 
-import ca.team5032.frc.utils.DoubleProperty
-import ca.team5032.frc.utils.Subsystem
-import ca.team5032.frc.utils.TRANSFER_ID
-import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.Perseverance
+import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
+import edu.wpi.first.wpilibj.DigitalInput
 
 class Transfer : Subsystem<Transfer.State>(State.Idle), Tabbed {
 
@@ -19,17 +18,27 @@ class Transfer : Subsystem<Transfer.State>(State.Idle), Tabbed {
     }
 
     private val transferVictor = WPI_VictorSPX(TRANSFER_ID)
+    private val sensor = DigitalInput(TRANSFER_SENSOR_ID)
 
     override fun periodic() {
-        when (state) {
-            State.TransferringUp -> transferVictor.set(-DEFAULT_POWER.value)
-            State.TransferringOut -> transferVictor.set(DEFAULT_POWER.value)
-            State.Idle -> transferVictor.set(0.0)
+        state.let {
+            if (hasBall() &&
+                it is State.TransferringUp &&
+                Perseverance.shooter.state !is Shooter.State.AtSpeed
+            ) return
+
+            when (it) {
+                State.TransferringUp -> transferVictor.set(-DEFAULT_POWER.value)
+                State.TransferringOut -> transferVictor.set(DEFAULT_POWER.value)
+                State.Idle -> transferVictor.set(0.0)
+            }
         }
     }
 
     fun up() = setState(State.TransferringUp)
     fun down() = setState(State.TransferringOut)
     fun stop() = setState(State.Idle)
+
+    fun hasBall() = sensor.get()
 
 }

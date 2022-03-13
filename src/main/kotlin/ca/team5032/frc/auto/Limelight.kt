@@ -94,7 +94,7 @@ class Limelight: Subsystem<Limelight.State>(State.Idle) {
                     cameraMode = CameraMode.Processing
                     ledMode = LEDMode.On
                 }
-                is State.OnTarget -> ledMode = LEDMode.Blink
+                is State.OnTarget -> ledMode = LEDMode.On
                 is State.Idle -> drive()
             }
         }

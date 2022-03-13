@@ -1,10 +1,9 @@
 package ca.team5032.frc.subsystems
 
-import ca.team5032.frc.utils.DoubleProperty
-import ca.team5032.frc.utils.INTAKE_ID
-import ca.team5032.frc.utils.Subsystem
-import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.Perseverance
+import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
+import edu.wpi.first.wpilibj.DigitalInput
 
 class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
 
@@ -20,6 +19,7 @@ class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
     }
 
     private val intakeVictor = WPI_VictorSPX(INTAKE_ID)
+    private val sensor = DigitalInput(INTAKE_SENSOR_ID)
 
     init {
         tab.addString("intake state") { state.javaClass.simpleName }
@@ -29,6 +29,8 @@ class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
 
     override fun periodic() {
         state.let {
+            if (Perseverance.transfer.hasBall() && hasBall() && it is State.Intaking) return
+
             when (it) {
                 is State.Intaking -> intakeVictor.set(-DEFAULT_POWER.value)
                 is State.Ejecting -> intakeVictor.set(DEFAULT_POWER.value)
@@ -40,5 +42,7 @@ class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
     fun intake() = setState(State.Intaking)
     fun eject() = setState(State.Ejecting)
     fun stop() = setState(State.Idle)
+
+    fun hasBall() = sensor.get()
 
 }

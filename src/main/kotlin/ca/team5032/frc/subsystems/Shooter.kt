@@ -60,7 +60,7 @@ class Shooter : Subsystem<Shooter.State>(State.Idle), Tabbed {
                 is State.AtSpeed ->
                     // Assumes feedforward gives passive voltage to maintain speed?
                     //shooterFalcon.setVoltage(feedforward.calculate(it.speed))
-                    shooterFalcon.set(ControlMode.Velocity, it.speed)
+                    shooterFalcon.set(ControlMode.Velocity, it.speed * 2048 / 60 / 10) // it.speed is RPM, need encoder ticks / 100s.
                 is State.RampingUp ->
                     // In Principle:
                     shooterFalcon.set(bangBangController.calculate(getRPM(), it.targetSpeed))

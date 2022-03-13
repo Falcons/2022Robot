@@ -1,11 +1,11 @@
 package ca.team5032.frc
 
+import ca.team5032.frc.auto.Limelight
 import ca.team5032.frc.commands.*
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
-import edu.wpi.first.wpilibj2.command.CommandBase
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 
@@ -20,6 +20,7 @@ object Perseverance : TimedRobot(0.02) {
     val transfer = Transfer()
     val shooter = Shooter()
 
+    val limelight = Limelight()
     val led = LEDSystem()
 
     const val debugMode = true
@@ -55,7 +56,7 @@ object Perseverance : TimedRobot(0.02) {
 
         // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kBack.value)
-            .whenHeld(ShooterToRPMCommand())
+            .whenHeld(ShootAtRPMCommand())
     }
 
 }

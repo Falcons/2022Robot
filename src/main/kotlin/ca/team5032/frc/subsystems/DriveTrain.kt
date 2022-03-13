@@ -46,6 +46,7 @@ class DriveTrain : Subsystem<DriveTrain.State>(State.Idle), Tabbed {
         WPI_TalonFX(REAR_RIGHT_ID)
     )
 
+    // TODO: Caused weird delay errors? investigate.
     private val ySpeedRateLimiter = SlewRateLimiter(0.5)
     private val xSpeedRateLimiter = SlewRateLimiter(0.5)
     private val zRotationRateLimiter = SlewRateLimiter(0.5)

@@ -23,7 +23,7 @@ class IntakeOutCommand : CommandBase() {
     }
 
     override fun initialize() {
-        Perseverance.intake.intake()
+        Perseverance.intake.eject()
     }
 
     override fun cancel() {

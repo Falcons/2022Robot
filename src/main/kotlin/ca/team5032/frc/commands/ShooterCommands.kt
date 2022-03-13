@@ -4,7 +4,7 @@ import ca.team5032.frc.Perseverance
 import ca.team5032.frc.subsystems.Shooter
 import edu.wpi.first.wpilibj2.command.CommandBase
 
-class ShooterToRPMCommand : CommandBase() {
+class ShootAtRPMCommand : CommandBase() {
     init {
         addRequirements(Perseverance.shooter)
     }
