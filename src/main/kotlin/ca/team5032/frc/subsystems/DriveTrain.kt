@@ -88,11 +88,6 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         }
 
         val rotation = controller.rightX * ROTATION_SPEED.value
-//        if (controller.leftBumper) rotation -= ROTATION_SPEED.value
-//        if (controller.rightBumper) rotation += ROTATION_SPEED.value
-//        if (controller.leftTriggerAxis > 0.05) rotation -= FAST_ROTATION.value
-//        if (controller.rightTriggerAxis > 0.05) rotation += FAST_ROTATION.value
-
         val additionalMult = if (controller.xButton) 1.65 else 1.0
 
         drive.driveCartesian(

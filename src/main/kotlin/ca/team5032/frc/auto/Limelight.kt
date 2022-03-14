@@ -73,11 +73,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
 
     var pipeline: Pipeline
         get() = Pipeline.from(networkTable.getEntry("getpipe").getNumber(0).toInt())
-        set(v) {
-            networkTable.getEntry("pipeline").setNumber(v.value)
-            if (v == Pipeline.ReflectiveTape) solenoid.set(DoubleSolenoid.Value.kReverse)
-            else solenoid.set(DoubleSolenoid.Value.kForward)
-        }
+        set(v) { networkTable.getEntry("pipeline").setNumber(v.value) }
 
     var cameraMode: CameraMode
         get() = CameraMode.from(networkTable.getEntry("camMode").getNumber(0).toInt())
@@ -88,6 +84,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
         set(v) { networkTable.getEntry("ledMode").setNumber(v.value) }
 
     override fun periodic() {
+        // Make sure solenoid is correctly positioned.
         if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
             solenoid.set(DoubleSolenoid.Value.kReverse)
         else if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)

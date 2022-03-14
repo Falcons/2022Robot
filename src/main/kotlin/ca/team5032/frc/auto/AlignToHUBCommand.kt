@@ -16,8 +16,11 @@ class AlignToHUBCommand : CommandBase() {
     }
 
     override fun execute() {
-
+        if (limelight.hasTarget()) {
+            // Turn towards target.
+        } else {
+            // Turn CW until hasTarget.
+        }
     }
-
 
 }

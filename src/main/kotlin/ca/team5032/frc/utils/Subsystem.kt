@@ -30,6 +30,12 @@ abstract class Subsystem<T : Any>(val subsystemName: String, defaultState: T) : 
      */
     private var controlState: ControlState = ControlState.IDLE
 
+    private var isStale = true
+
+    override fun periodic() {
+        isStale = true
+    }
+
     protected fun setState(newState: T): Set<Subsystem<T>> {
         //if (newState == state) return setOf(this)
 
@@ -39,6 +45,7 @@ abstract class Subsystem<T : Any>(val subsystemName: String, defaultState: T) : 
 
         //print("[${subsystemName}] Changing state from ${state.javaClass.simpleName} to ${newState.javaClass.simpleName}\n")
         state = newState
+        isStale = false
 
         // Returns the set for chaining setting states with commands.
         return setOf(this)
