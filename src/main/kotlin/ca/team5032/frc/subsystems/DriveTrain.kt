@@ -19,9 +19,9 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         // Threshold to consider the robot as moving  (receiving joystick input)
         val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
         // Sensitivity for ySpeed cartesian movement. (north-south)
-        val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 0.4)
+        val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 1.0)
         // Sensitivity for xSpeed cartesian movement. (south-west)
-        val X_SENSITIVITY = DoubleProperty("X Sensitivity", 0.5)
+        val X_SENSITIVITY = DoubleProperty("X Sensitivity", 1.0)
 
         // Constant rotation speed for the robot.
         val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)

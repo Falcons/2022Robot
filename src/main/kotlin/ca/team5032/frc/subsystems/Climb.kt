@@ -13,7 +13,7 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
 
     companion object {
         // Default power for climb
-        val DEFAULT_POWER = DoubleProperty("Power", 0.30)
+        val DEFAULT_POWER = DoubleProperty("Power", 0.50)
     }
 
     sealed class State {
