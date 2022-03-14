@@ -8,12 +8,8 @@ class ClimbUpCommand : CommandBase() {
         addRequirements(Perseverance.climb)
     }
 
-    override fun initialize() {
+    override fun execute() {
         Perseverance.climb.up()
-    }
-
-    override fun cancel() {
-        Perseverance.climb.stop()
     }
 }
 
@@ -22,11 +18,7 @@ class ClimbDownCommand : CommandBase() {
         addRequirements(Perseverance.climb)
     }
 
-    override fun initialize() {
+    override fun execute() {
         Perseverance.climb.down()
-    }
-
-    override fun cancel() {
-        Perseverance.climb.stop()
     }
 }

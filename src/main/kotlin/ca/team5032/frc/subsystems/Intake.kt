@@ -5,7 +5,7 @@ import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
 import edu.wpi.first.wpilibj.DigitalInput
 
-class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
+class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
 
     companion object {
         // The default power of the intake motor.
@@ -29,7 +29,10 @@ class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
 
     override fun periodic() {
         state.let {
-            if (Perseverance.transfer.hasBall() && hasBall() && it is State.Intaking) return
+            if (Perseverance.transfer.hasBall() && hasBall() && it is State.Intaking) {
+                intakeVictor.set(0.0)
+                return
+            }
 
             when (it) {
                 is State.Intaking -> intakeVictor.set(-DEFAULT_POWER.value)
@@ -37,6 +40,8 @@ class Intake : Subsystem<Intake.State>(State.Idle), Tabbed {
                 is State.Idle -> intakeVictor.set(0.0)
             }
         }
+
+        stop()
     }
 
     fun intake() = setState(State.Intaking)

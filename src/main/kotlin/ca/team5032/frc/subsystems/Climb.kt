@@ -9,7 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.wpilibj.DigitalInput
 
 
-class Climb : Subsystem<Climb.State>(State.Idle), Tabbed {
+class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
 
     companion object {
         // Default power for climb
@@ -36,8 +36,10 @@ class Climb : Subsystem<Climb.State>(State.Idle), Tabbed {
 
     override fun periodic() {
         state.let { // Mutex lock so doesnt destroy itself.
-            if (!bottomSensor.get() && it is State.Down) return
-            if (!topSensor.get() && it is State.Up) return
+            if ((!bottomSensor.get() && it is State.Down) || (!topSensor.get() && it is State.Up)) {
+                climbFalcon.set(0.0)
+                return
+            }
 
             when (it) {
                 is State.Up -> climbFalcon.set(DEFAULT_POWER.value)
@@ -45,6 +47,8 @@ class Climb : Subsystem<Climb.State>(State.Idle), Tabbed {
                 is State.Idle -> climbFalcon.set(0.0)
             }
         }
+
+        stop()
     }
 
     fun up() = setState(State.Up)

@@ -48,14 +48,8 @@ object Perseverance : TimedRobot(0.02) {
         JoystickButton(peripheralController, XboxController.Button.kA.value)
             .whenHeld(ClimbDownCommand())
 
-        // Register transfer commands.
-        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
-            .whenHeld(TransferUpCommand())
-        JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value)
-            .whenHeld(TransferDownCommand())
-
         // Register shooter commands.
-        JoystickButton(peripheralController, XboxController.Button.kBack.value)
+        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
             .whenHeld(ShootAtRPMCommand())
     }
 

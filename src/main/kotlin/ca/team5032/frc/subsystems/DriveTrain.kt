@@ -13,7 +13,7 @@ import kotlin.math.abs
 // https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/mecanumbot/Drivetrain.java
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-odometry.html
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-kinematics.html
-class DriveTrain : Subsystem<DriveTrain.State>(State.Idle), Tabbed {
+class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     companion object {
         // Threshold to consider the robot as moving  (receiving joystick input)

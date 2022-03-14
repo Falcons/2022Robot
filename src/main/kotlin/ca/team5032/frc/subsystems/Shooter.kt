@@ -4,23 +4,23 @@ import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.SHOOTER_ID
 import ca.team5032.frc.utils.Subsystem
 import ca.team5032.frc.utils.Tabbed
-import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.math.controller.BangBangController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import kotlin.math.abs
 
-class Shooter : Subsystem<Shooter.State>(State.Idle), Tabbed {
+class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
     companion object {
         val RPM_THRESHOLD = DoubleProperty("RPM Threshold", 100.0)
-        val TARGET_RPM = DoubleProperty("Target RPM", 1000.0)
+        val TARGET_RPM = DoubleProperty("Target RPM", 300.0)
+        val POWER = DoubleProperty("Target Speed", 0.35)
 
         // TODO: Determine via SysId
-        const val kS: Double = 0.0
+        const val kS: Double = 0.70719
+        const val kV: Double = 0.00031502
         const val kA: Double = 0.0
-        const val kV: Double = 0.0
     }
 
     sealed class State {
@@ -32,14 +32,16 @@ class Shooter : Subsystem<Shooter.State>(State.Idle), Tabbed {
     private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
 
     private val bangBangController = BangBangController()
-    private val feedforward = SimpleMotorFeedforward(kS, kV, kA)
+    private val feedforward = SimpleMotorFeedforward(kS, kV)
 
     init {
         // Set the shooter falcon to coast to prevent the brake from fighting against BangBang.
         shooterFalcon.setNeutralMode(NeutralMode.Coast)
+        shooterFalcon.inverted = true
+        tab.addString("shooter state") { state.javaClass.simpleName }
 
-        //tab.addNumber("Current RPM", ::getRPM)
-        buildConfig(RPM_THRESHOLD)
+        tab.addNumber("Current RPM", ::getRPM)
+        buildConfig(RPM_THRESHOLD, TARGET_RPM, POWER)
     }
 
     override fun periodic() {
@@ -60,19 +62,24 @@ class Shooter : Subsystem<Shooter.State>(State.Idle), Tabbed {
                 is State.AtSpeed ->
                     // Assumes feedforward gives passive voltage to maintain speed?
                     //shooterFalcon.setVoltage(feedforward.calculate(it.speed))
-                    shooterFalcon.set(ControlMode.Velocity, it.speed * 2048 / 60 / 10) // it.speed is RPM, need encoder ticks / 100s.
+                    shooterFalcon.setVoltage(
+                        3.7 * bangBangController.calculate(getRPM(), it.speed)
+                                + 1 * feedforward.calculate(it.speed * 360 / 60)
+                    )
                 is State.RampingUp ->
                     // In Principle:
-                    shooterFalcon.set(bangBangController.calculate(getRPM(), it.targetSpeed))
-//                    shooterFalcon.setVoltage(
-//                        bangBangController.calculate(getRPM(), it.targetSpeed)
-//                                + 0.9 * feedforward.calculate(it.targetSpeed)
-//                    )
+                    //shooterFalcon.set(-0.45)
+                    shooterFalcon.setVoltage(
+                        3.7 * bangBangController.calculate(getRPM(), it.targetSpeed)
+                                + 1 * feedforward.calculate(it.targetSpeed * 360 / 60)
+                    )
                     //shooterFalcon.set(TalonFXControlMode.MotionMagic)
                 is State.Idle ->
                     shooterFalcon.set(0.0)
             }
         }
+
+        stop()
     }
 
     // TODO: Look into making this entire project multithreaded, would help with auto as well.
@@ -81,7 +88,7 @@ class Shooter : Subsystem<Shooter.State>(State.Idle), Tabbed {
 
     // units per second -> rotations per minute.
     // 2048 units = 1 rotation.
-    private fun getRPM() = shooterFalcon.sensorCollection.integratedSensorPosition / 2048 * 60
+    private fun getRPM() = -shooterFalcon.sensorCollection.integratedSensorVelocity / 2048 * 60
 
     private fun withinThreshold(a: Double, b: Double, threshold: Double): Boolean {
         return abs(a - b) < threshold

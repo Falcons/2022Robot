@@ -8,12 +8,8 @@ class IntakeInCommand : CommandBase() {
         addRequirements(Perseverance.intake)
     }
 
-    override fun initialize() {
+    override fun execute() {
         Perseverance.intake.intake()
-    }
-
-    override fun cancel() {
-        Perseverance.intake.stop()
     }
 }
 
@@ -22,11 +18,7 @@ class IntakeOutCommand : CommandBase() {
         addRequirements(Perseverance.intake)
     }
 
-    override fun initialize() {
+    override fun execute() {
         Perseverance.intake.eject()
-    }
-
-    override fun cancel() {
-        Perseverance.intake.stop()
     }
 }

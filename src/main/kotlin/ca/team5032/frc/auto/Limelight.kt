@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.PneumaticsModuleType
 import edu.wpi.first.wpilibj.drive.Vector2d
 
-class Limelight: Subsystem<Limelight.State>(State.Idle) {
+class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
 
     enum class CameraMode(val value: Int) {
         Processing(0),
@@ -88,6 +88,11 @@ class Limelight: Subsystem<Limelight.State>(State.Idle) {
         set(v) { networkTable.getEntry("ledMode").setNumber(v.value) }
 
     override fun periodic() {
+        if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
+            solenoid.set(DoubleSolenoid.Value.kReverse)
+        else if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
+            solenoid.set(DoubleSolenoid.Value.kForward)
+
         state.let {
             when (it) {
                 is State.Targetting -> {

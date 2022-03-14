@@ -11,7 +11,7 @@ enum class ControlState {
 
 data class StateTransition<T : Any>(val from: T, val to: T, val subsystem: Subsystem<T>)
 
-abstract class Subsystem<T : Any>(defaultState: T) : SubsystemBase() {
+abstract class Subsystem<T : Any>(val subsystemName: String, defaultState: T) : SubsystemBase() {
 
     private val transitionTasks: MutableList<Consumer<StateTransition<T>>> = mutableListOf()
 
@@ -31,11 +31,13 @@ abstract class Subsystem<T : Any>(defaultState: T) : SubsystemBase() {
     private var controlState: ControlState = ControlState.IDLE
 
     protected fun setState(newState: T): Set<Subsystem<T>> {
-        val transition = StateTransition(state, newState, this)
-        transitionTasks.forEach { it.accept(transition) }
-        transitionTasks.clear()
+        //if (newState == state) return setOf(this)
 
-        print("Changing state from ${state.javaClass.simpleName} to ${newState.javaClass.simpleName}")
+        //val transition = StateTransition(state, newState, this)
+        //transitionTasks.forEach { it.accept(transition) }
+        //transitionTasks.clear()
+
+        //print("[${subsystemName}] Changing state from ${state.javaClass.simpleName} to ${newState.javaClass.simpleName}\n")
         state = newState
 
         // Returns the set for chaining setting states with commands.

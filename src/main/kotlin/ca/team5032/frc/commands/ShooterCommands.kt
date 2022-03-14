@@ -9,11 +9,8 @@ class ShootAtRPMCommand : CommandBase() {
         addRequirements(Perseverance.shooter)
     }
 
-    override fun initialize() {
+    override fun execute() {
         Perseverance.shooter.shoot(Shooter.TARGET_RPM.value)
     }
 
-    override fun cancel() {
-        Perseverance.shooter.stop()
-    }
 }
