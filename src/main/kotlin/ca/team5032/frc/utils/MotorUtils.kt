@@ -4,6 +4,7 @@ import ca.team5032.frc.subsystems.DriveTrain
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 
+// TODO: actually use this?
 class Falcon500(motorId: Int) : WPI_TalonFX(motorId) {
 
     init {

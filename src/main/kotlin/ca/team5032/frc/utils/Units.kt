@@ -1,8 +1,12 @@
 package ca.team5032.frc.utils
 
+// TODO: If I get bored, rewrite this to be even more generic, but more typesafe, supporting infinite derivations of
+//  units, all SI units and more flexibility.
+
 abstract class Unit(val conversionFactor: Double)
 
 sealed class Distance(conversionFactor: Double) : Unit(conversionFactor)
+object Inches : Distance(0.0254)
 object Feet : Distance(0.3048)
 object Metres : Distance(1.00)
 object Kilometres : Distance(1000.0)
@@ -17,11 +21,12 @@ sealed class Time(conversionFactor: Double) : Unit(conversionFactor)
 object Millis : Time(0.001)
 object Seconds : Time(1.00)
 object Minutes : Time(60.00)
+object Hours : Time(3600.00)
 
 data class Derivative<T : Unit, K : Unit>(val a: T, val b: K)
 data class Ratio<T : Unit, K : Unit>(val n: Double, val derivative: Derivative<T, K>)
 
-// 1st derivatives
+// Base units
 fun <T : Unit> convert(value: Double, from: T, to: T): Double {
     return value / from.conversionFactor * to.conversionFactor
 }
@@ -47,7 +52,7 @@ operator fun <T : Unit> Number.times(unit: T): Unit {
     return object : Unit(unit.conversionFactor * this.toDouble()) {}
 }
 
-// 2nd derivatives
+// 1st derivatives
 operator fun <T : Unit, K : Unit> T.div(other: K): Derivative<T, K> {
     return Derivative(this, other)
 }
