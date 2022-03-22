@@ -40,13 +40,11 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
                 is State.Idle -> intakeVictor.set(0.0)
             }
         }
-
-        stop()
     }
 
-    fun intake() = setState(State.Intaking)
-    fun eject() = setState(State.Ejecting)
-    fun stop() = setState(State.Idle)
+    fun intake() = state(State.Intaking)
+    fun eject() = state(State.Ejecting)
+    fun stop() = state(State.Idle)
 
     fun hasBall() = sensor.get()
 

@@ -2,6 +2,7 @@ package ca.team5032.frc.utils
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import java.util.function.Consumer
+import java.util.logging.Logger
 
 enum class ControlState {
     MANUAL,
@@ -11,9 +12,10 @@ enum class ControlState {
 
 data class StateTransition<T : Any>(val from: T, val to: T, val subsystem: Subsystem<T>)
 
-abstract class Subsystem<T : Any>(val subsystemName: String, defaultState: T) : SubsystemBase() {
+abstract class Subsystem<T : Any>(private val subsystemName: String, defaultState: T) : SubsystemBase() {
 
-    private val transitionTasks: MutableList<Consumer<StateTransition<T>>> = mutableListOf()
+    private val transitionEvents: MutableList<Consumer<StateTransition<T>>> = mutableListOf()
+    private val logger: Logger = Logger.getLogger("Subsystem.${subsystemName}")
 
     /**
      * Represents the current state of the subsystem, will be overridden during autonomous.
@@ -28,27 +30,15 @@ abstract class Subsystem<T : Any>(val subsystemName: String, defaultState: T) : 
      * The control state represents how the subsystem is being controlled, either manually, automatically, or
      * the component is sitting idle.
      */
+    // TODO: Use this, reformat subsystems to define inputs, consider embracing linear systems ideology a little?
     private var controlState: ControlState = ControlState.IDLE
 
-    private var isStale = true
+    protected fun state(newState: T) {
+        val transition = StateTransition(state, newState, this)
+        transitionEvents.forEach { it.accept(transition) }
 
-    override fun periodic() {
-        isStale = true
-    }
-
-    protected fun setState(newState: T): Set<Subsystem<T>> {
-        //if (newState == state) return setOf(this)
-
-        //val transition = StateTransition(state, newState, this)
-        //transitionTasks.forEach { it.accept(transition) }
-        //transitionTasks.clear()
-
-        //print("[${subsystemName}] Changing state from ${state.javaClass.simpleName} to ${newState.javaClass.simpleName}\n")
+        logger.config("Changing state, from: ${state.javaClass.simpleName} to: ${newState.javaClass.simpleName}\n")
         state = newState
-        isStale = false
-
-        // Returns the set for chaining setting states with commands.
-        return setOf(this)
     }
 
 }

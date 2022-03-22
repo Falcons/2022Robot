@@ -40,7 +40,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
 
     sealed class State {
         object OnTarget : State()
-        object Targetting : State()
+        object Targeting : State()
         object Idle : State()
     }
 
@@ -92,7 +92,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
 
         state.let {
             when (it) {
-                is State.Targetting -> {
+                is State.Targeting -> {
                     cameraMode = CameraMode.Processing
                     ledMode = LEDMode.On
                 }

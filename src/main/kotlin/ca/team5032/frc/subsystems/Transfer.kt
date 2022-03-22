@@ -1,6 +1,5 @@
 package ca.team5032.frc.subsystems
 
-import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
 import edu.wpi.first.wpilibj.DigitalInput
@@ -25,10 +24,6 @@ class Transfer : Subsystem<Transfer.State>("Transfer", State.Idle), Tabbed {
     }
 
     override fun periodic() {
-        if (Perseverance.peripheralController.pov == 270) setState(State.TransferringUp)
-        else if (Perseverance.peripheralController.pov == 90) setState(State.TransferringOut)
-        else setState(State.Idle)
-
         state.let {
 //            if (hasBall() &&
 //                it is State.TransferringUp &&
@@ -44,13 +39,11 @@ class Transfer : Subsystem<Transfer.State>("Transfer", State.Idle), Tabbed {
                 State.Idle -> transferVictor.set(0.0)
             }
         }
-
-        stop()
     }
 
-    fun up() = setState(State.TransferringUp)
-    fun down() = setState(State.TransferringOut)
-    fun stop() = setState(State.Idle)
+    fun up() = state(State.TransferringUp)
+    fun down() = state(State.TransferringOut)
+    fun stop() = state(State.Idle)
 
     fun hasBall() = !sensor.get()
 

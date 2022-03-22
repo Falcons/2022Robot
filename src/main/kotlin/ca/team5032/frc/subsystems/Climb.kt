@@ -47,12 +47,10 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
                 is State.Idle -> climbFalcon.set(0.0)
             }
         }
-
-        stop()
     }
 
-    fun up() = setState(State.Up)
-    fun down() = setState(State.Down)
-    fun stop() = setState(State.Idle)
+    fun up() = state(State.Up)
+    fun down() = state(State.Down)
+    fun stop() = state(State.Idle)
 
 }

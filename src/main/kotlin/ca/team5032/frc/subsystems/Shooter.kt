@@ -1,9 +1,6 @@
 package ca.team5032.frc.subsystems
 
-import ca.team5032.frc.utils.DoubleProperty
-import ca.team5032.frc.utils.SHOOTER_ID
-import ca.team5032.frc.utils.Subsystem
-import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.math.controller.BangBangController
@@ -17,7 +14,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         val TARGET_RPM = DoubleProperty("Target RPM", 300.0)
         val POWER = DoubleProperty("Target Speed", 0.35)
 
-        // TODO: Determine via SysId
+        // TODO: Figure out why these aren't accurate? and/or FF doesn't work how I thought.
         const val kS: Double = 0.70719
         const val kV: Double = 0.00031502
         const val kA: Double = 0.0
@@ -31,6 +28,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
     private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
 
+    // TODO: PID instead of bang bang. Start using PID way more.
     private val bangBangController = BangBangController()
     private val feedforward = SimpleMotorFeedforward(kS, kV)
 
@@ -45,17 +43,13 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     }
 
     override fun periodic() {
-        // TODO: BangBang + FF
-        // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/bang-bang.html
-        // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/feedforward.html#feedforward-control-in-wpilib
-
         // Acts as synchronized or mutex
         state.let {
             // Simple state machine.
             if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed, RPM_THRESHOLD.value)) {
-                setState(State.AtSpeed(it.targetSpeed))
+                state(State.AtSpeed(it.targetSpeed))
             } else if (it is State.AtSpeed && !withinThreshold(getRPM(), it.speed, RPM_THRESHOLD.value)) {
-                setState(State.RampingUp(it.speed))
+                state(State.RampingUp(it.speed))
             }
 
             when (it) {
@@ -78,17 +72,15 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                     shooterFalcon.set(0.0)
             }
         }
-
-        stop()
     }
 
     // TODO: Look into making this entire project multithreaded, would help with auto as well.
-    fun shoot(targetRPM: Double) = setState(State.RampingUp(targetRPM))
-    fun stop() = setState(State.Idle)
+    fun shoot(targetRPM: Double) = state(State.RampingUp(targetRPM))
+    fun stop() = state(State.Idle)
 
-    // units per second -> rotations per minute.
+    // units per 100 millisecond -> rotations per minute.
     // 2048 units = 1 rotation.
-    private fun getRPM() = -shooterFalcon.sensorCollection.integratedSensorVelocity / 2048 * 60
+    private fun getRPM() = -shooterFalcon.selectedSensorVelocity apply (TalonTicks / (100 * Millis) to Rotations / Minutes)
 
     private fun withinThreshold(a: Double, b: Double, threshold: Double): Boolean {
         return abs(a - b) < threshold

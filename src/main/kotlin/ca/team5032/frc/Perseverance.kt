@@ -1,13 +1,13 @@
 package ca.team5032.frc
 
 import ca.team5032.frc.auto.Limelight
-import ca.team5032.frc.commands.*
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
+import edu.wpi.first.wpilibj2.command.button.POVButton
 
 object Perseverance : TimedRobot(0.02) {
 
@@ -38,19 +38,25 @@ object Perseverance : TimedRobot(0.02) {
     private fun registerCommands() {
         // Register intake commands.
         JoystickButton(peripheralController, XboxController.Button.kX.value)
-            .whenHeld(IntakeInCommand())
+            .whenPressed(intake::intake, intake).whenReleased(intake::stop, intake)
         JoystickButton(peripheralController, XboxController.Button.kB.value)
-            .whenHeld(IntakeOutCommand())
+            .whenPressed(intake::eject, intake).whenReleased(intake::stop, intake)
 
         // Register climb commands.
         JoystickButton(peripheralController, XboxController.Button.kY.value)
-            .whenHeld(ClimbUpCommand())
+            .whenPressed(climb::up, climb).whenReleased(climb::stop, climb)
         JoystickButton(peripheralController, XboxController.Button.kA.value)
-            .whenHeld(ClimbDownCommand())
+            .whenPressed(climb::down, climb).whenReleased(climb::stop, climb)
 
         // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
-            .whenHeld(ShootAtRPMCommand())
+            .whenPressed({ shooter.shoot(300.0) }, shooter).whenReleased(shooter::stop, shooter)
+
+        // Register transfer commands.
+        POVButton(peripheralController, 270)
+            .whenPressed(transfer::up, transfer).whenReleased(transfer::stop, transfer)
+        POVButton(peripheralController, 90)
+            .whenPressed(transfer::down, transfer).whenReleased(transfer::stop, transfer)
     }
 
 }
