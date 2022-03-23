@@ -46,6 +46,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         tab.addNumber("Encoder Value") { shooterFalcon.selectedSensorVelocity }
         tab.addNumber("Current RPM", ::getRPM)
         tab.add(controller)
+
         buildConfig(RPM_THRESHOLD, TARGET_RPM, POWER)
     }
 

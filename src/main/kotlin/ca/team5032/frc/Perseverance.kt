@@ -65,7 +65,7 @@ object Perseverance : TimedRobot(0.02) {
             .whenPressed(intake::deployIntake, intake)
 
 
-        val command = AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape)
+        val command = AlignToTargetCommand(Limelight.Pipeline.RedBall)
         JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value)
             .whenPressed({ command.schedule() }, limelight)
             .whenReleased({ command.cancel() }, limelight)

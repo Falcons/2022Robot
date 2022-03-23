@@ -46,7 +46,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
         object Idle : State()
     }
 
-    val controller = PIDController(0.017, 0.0, 0.0)
+    val controller = PIDController(0.01, 0.0, 0.0)
 
     data class LimelightTarget(
         val offset: Vector2d,
@@ -95,6 +95,8 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
         tab.add("Target") {
             it.addDoubleProperty("Offset X", { target.offset.x }) {}
         }
+
+        pipeline = Pipeline.ReflectiveTape
 
         tab.add(controller)
     }
