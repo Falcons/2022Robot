@@ -35,7 +35,7 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
     }
 
     override fun periodic() {
-        state.let { // Mutex lock so doesnt destroy itself.
+        state.let { // Mutex lock so doesn't destroy itself.
             if ((!bottomSensor.get() && it is State.Down) || (!topSensor.get() && it is State.Up)) {
                 climbFalcon.set(0.0)
                 return

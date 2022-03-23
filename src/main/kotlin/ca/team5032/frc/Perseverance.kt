@@ -1,5 +1,6 @@
 package ca.team5032.frc
 
+import ca.team5032.frc.auto.AlignToTargetCommand
 import ca.team5032.frc.auto.Limelight
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
@@ -50,13 +51,24 @@ object Perseverance : TimedRobot(0.02) {
 
         // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
-            .whenPressed({ shooter.shoot(300.0) }, shooter).whenReleased(shooter::stop, shooter)
+            .whenPressed({ shooter.shoot(3000.0) }, shooter).whenReleased(shooter::stop, shooter)
 
         // Register transfer commands.
         POVButton(peripheralController, 270)
             .whenPressed(transfer::up, transfer).whenReleased(transfer::stop, transfer)
         POVButton(peripheralController, 90)
             .whenPressed(transfer::down, transfer).whenReleased(transfer::stop, transfer)
+
+        POVButton(peripheralController, 0)
+            .whenPressed(intake::raiseIntake, intake)
+        POVButton(peripheralController, 180)
+            .whenPressed(intake::deployIntake, intake)
+
+
+        val command = AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape)
+        JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value)
+            .whenPressed({ command.schedule() }, limelight)
+            .whenReleased({ command.cancel() }, limelight)
     }
 
 }

@@ -5,7 +5,6 @@ import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import com.kauailabs.navx.frc.AHRS
-import edu.wpi.first.math.filter.SlewRateLimiter
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
@@ -25,7 +24,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     companion object {
         // Threshold to consider the robot as moving  (receiving joystick input)
-        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.1)
+        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.05)
         // Sensitivity for ySpeed cartesian movement. (north-south)
         val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 1.0)
         // Sensitivity for xSpeed cartesian movement. (south-west)
@@ -39,6 +38,8 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
         val ANGULAR_CONVERSION = 0.47877872 * (Metres / Rotations)
     }
+
+    data class DriveInput(val ySpeed: Double, val xSpeed: Double, val zRotation: Double)
 
     sealed class State {
         object Autonomous : State() // TODO: Proper autonomous mode for all subsystems, locks normal input and only controllable through auto.
@@ -58,17 +59,15 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
     private val rearRight = WPI_TalonFX(REAR_RIGHT_ID)
 
     private val odometry: MecanumDriveOdometry
-    private var pose: Pose2d = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
-
-    // TODO: Caused weird delays? investigate- maybe dont use.
-    private val ySpeedRateLimiter = SlewRateLimiter(0.5)
-    private val xSpeedRateLimiter = SlewRateLimiter(0.5)
-    private val zRotationRateLimiter = SlewRateLimiter(0.5)
+    private var pose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
 
     private val hasInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD.value
                 || abs(controller.leftX) > DEADBAND_THRESHOLD.value
+                || abs(controller.rightX) > DEADBAND_THRESHOLD.value
                 || controller.pov != -1
+
+    var autonomousInput = DriveInput(0.0, 0.0, 0.0)
 
     init {
         frontRight.inverted = true
@@ -81,6 +80,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         drive = MecanumDrive(
             frontLeft, rearLeft, frontRight, rearRight
         )
+        drive.setDeadband(0.0)
 
         val kinematics = MecanumDriveKinematics(
             Translation2d(0.31, 0.28),
@@ -97,12 +97,24 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
 
+    private fun getInput(): DriveInput {
+        return when (state) {
+            is State.Autonomous -> autonomousInput
+            is State.Driving -> DriveInput(
+                    -controller.leftY * Y_SENSITIVITY.value,
+                    controller.leftX * X_SENSITIVITY.value,
+                    controller.rightX * ROTATION_SPEED.value
+                )
+            else -> DriveInput(0.0, 0.0, 0.0)
+        }
+    }
+
     override fun periodic() {
         if (Perseverance.isDisabled) return
 
         if (hasInput) {
             state(State.Driving)
-        } else {
+        } else if (state !is State.Autonomous) {
             state(State.Idle)
         }
 
@@ -115,14 +127,20 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             return
         }
 
-        val rotation = controller.rightX * ROTATION_SPEED.value
         val additionalMult = if (controller.xButton) 1.65 else 1.0
+        val (ySpeed, xSpeed, zRotation) = getInput()
 
-        drive.driveCartesian(
-            -controller.leftY * Y_SENSITIVITY.value * additionalMult,
-            controller.leftX * X_SENSITIVITY.value * additionalMult,
-            rotation
-        )
+//        drive.driveCartesian(
+//            ySpeed,
+//            xSpeed,
+//            zRotation
+//        )
+
+        val motorOutputs = driveCartesianIK(ySpeed, xSpeed, zRotation)
+        frontLeft.set(motorOutputs[0])
+        frontRight.set(motorOutputs[1])
+        rearLeft.set(motorOutputs[2])
+        rearRight.set(motorOutputs[3])
 
         val encoder = TalonTicks / (100 * Millis)
         val rps = Rotations / Seconds

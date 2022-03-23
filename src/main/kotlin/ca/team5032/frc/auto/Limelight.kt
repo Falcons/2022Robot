@@ -1,12 +1,14 @@
 package ca.team5032.frc.auto
 
 import ca.team5032.frc.utils.Subsystem
+import ca.team5032.frc.utils.Tabbed
+import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.PneumaticsModuleType
 import edu.wpi.first.wpilibj.drive.Vector2d
 
-class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
+class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
 
     enum class CameraMode(val value: Int) {
         Processing(0),
@@ -44,8 +46,10 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
         object Idle : State()
     }
 
+    val controller = PIDController(0.017, 0.0, 0.0)
+
     data class LimelightTarget(
-        val position: Vector2d,
+        val offset: Vector2d,
         val areaPercentage: Double,
         val skew: Double,
         val shortestSide: Double,
@@ -55,7 +59,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
         )
 
     private val networkTable = NetworkTableInstance.getDefault().getTable("limelight")
-    private val solenoid = DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1)
+    val solenoid = DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1)
 
     val target: LimelightTarget
         get() = LimelightTarget(
@@ -83,12 +87,24 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
         get() = LEDMode.from(networkTable.getEntry("ledMode").getNumber(0).toInt())
         set(v) { networkTable.getEntry("ledMode").setNumber(v.value) }
 
+    init {
+        tab.addString("LED Mode") { ledMode.name }
+        tab.addString("Camera Mode") { cameraMode.name }
+        tab.addString("Pipeline") { pipeline.name }
+        tab.addString("State") { state.javaClass.simpleName }
+        tab.add("Target") {
+            it.addDoubleProperty("Offset X", { target.offset.x }) {}
+        }
+
+        tab.add(controller)
+    }
+
     override fun periodic() {
         // Make sure solenoid is correctly positioned.
-        if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
-            solenoid.set(DoubleSolenoid.Value.kReverse)
-        else if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
+        if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
             solenoid.set(DoubleSolenoid.Value.kForward)
+        else if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
+            solenoid.set(DoubleSolenoid.Value.kReverse)
 
         state.let {
             when (it) {
@@ -105,8 +121,8 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle) {
     fun hasTarget(): Boolean = networkTable.getEntry("tv").getNumber(0) == 1.0
 
     private fun drive() {
-        ledMode = LEDMode.Off
-        cameraMode = CameraMode.Drive
+        ledMode = LEDMode.On
+        cameraMode = CameraMode.Processing
     }
 
 }

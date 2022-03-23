@@ -1,9 +1,13 @@
 package ca.team5032.frc.subsystems
 
-import ca.team5032.frc.utils.*
+import ca.team5032.frc.utils.DoubleProperty
+import ca.team5032.frc.utils.SHOOTER_ID
+import ca.team5032.frc.utils.Subsystem
+import ca.team5032.frc.utils.Tabbed
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.math.controller.BangBangController
+import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import kotlin.math.abs
 
@@ -29,6 +33,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
 
     // TODO: PID instead of bang bang. Start using PID way more.
+    private val controller = PIDController(0.0, 0.0, 0.0)
     private val bangBangController = BangBangController()
     private val feedforward = SimpleMotorFeedforward(kS, kV)
 
@@ -38,12 +43,14 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         shooterFalcon.inverted = true
         tab.addString("shooter state") { state.javaClass.simpleName }
 
+        tab.addNumber("Encoder Value") { shooterFalcon.selectedSensorVelocity }
         tab.addNumber("Current RPM", ::getRPM)
+        tab.add(controller)
         buildConfig(RPM_THRESHOLD, TARGET_RPM, POWER)
     }
 
     override fun periodic() {
-        // Acts as synchronized or mutex
+        //  mutex
         state.let {
             // Simple state machine.
             if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed, RPM_THRESHOLD.value)) {
@@ -56,17 +63,18 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                 is State.AtSpeed ->
                     // Assumes feedforward gives passive voltage to maintain speed?
                     //shooterFalcon.setVoltage(feedforward.calculate(it.speed))
-                    shooterFalcon.setVoltage(
-                        3.7 * bangBangController.calculate(getRPM(), it.speed)
-                                + 1 * feedforward.calculate(it.speed * 360 / 60)
-                    )
+//                    shooterFalcon.setVoltage(
+//                        12 * bangBangController.calculate(getRPM(), it.speed)
+//                                + 0.9 * feedforward.calculate(it.speed apply (Degrees / Seconds to Rotations / Minutes))
+//                    )
+                    shooterFalcon.setVoltage(controller.calculate(getRPM(), it.speed))
                 is State.RampingUp ->
                     // In Principle:
-                    //shooterFalcon.set(-0.45)
-                    shooterFalcon.setVoltage(
-                        3.7 * bangBangController.calculate(getRPM(), it.targetSpeed)
-                                + 1 * feedforward.calculate(it.targetSpeed * 360 / 60)
-                    )
+                    shooterFalcon.setVoltage(controller.calculate(getRPM(), it.targetSpeed))
+//                    shooterFalcon.setVoltage(
+//                        3.7 * bangBangController.calculate(getRPM(), it.targetSpeed)
+//                                + 1 * feedforward.calculate(it.targetSpeed apply (Degrees / Seconds to Rotations / Minutes))
+//                    )
                     //shooterFalcon.set(TalonFXControlMode.MotionMagic)
                 is State.Idle ->
                     shooterFalcon.set(0.0)
@@ -80,7 +88,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
     // units per 100 millisecond -> rotations per minute.
     // 2048 units = 1 rotation.
-    private fun getRPM() = -shooterFalcon.selectedSensorVelocity apply (TalonTicks / (100 * Millis) to Rotations / Minutes)
+    private fun getRPM() = shooterFalcon.selectedSensorVelocity / 2048 * 10 * 60
 
     private fun withinThreshold(a: Double, b: Double, threshold: Double): Boolean {
         return abs(a - b) < threshold

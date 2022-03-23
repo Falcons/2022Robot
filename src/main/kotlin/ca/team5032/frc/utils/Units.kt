@@ -13,12 +13,12 @@ object Kilometres : Distance(1000.0)
 
 sealed class AngularDistance(conversionFactor: Double) : Unit(conversionFactor)
 object Rotations : AngularDistance(1.00)
-object Radians : AngularDistance(2 * Math.PI)
-object Degrees : AngularDistance(360.00)
-object TalonTicks : AngularDistance(2048.00)
+object Radians : AngularDistance(1 / 2 * Math.PI)
+object Degrees : AngularDistance(1 / 360.00)
+object TalonTicks : AngularDistance(1 / 2048.00)
 
 sealed class Time(conversionFactor: Double) : Unit(conversionFactor)
-object Millis : Time(0.001)
+object Millis : Time(1 / 1000.00)
 object Seconds : Time(1.00)
 object Minutes : Time(60.00)
 object Hours : Time(3600.00)
@@ -28,7 +28,7 @@ data class Ratio<T : Unit, K : Unit>(val n: Double, val derivative: Derivative<T
 
 // Base units
 fun <T : Unit> convert(value: Double, from: T, to: T): Double {
-    return value / from.conversionFactor * to.conversionFactor
+    return value * from.conversionFactor / to.conversionFactor
 }
 
 infix fun <T : Unit> Number.apply(units: Pair<T, T>): Double {
@@ -58,10 +58,14 @@ operator fun <T : Unit, K : Unit> T.div(other: K): Derivative<T, K> {
 }
 
 fun <T : Unit, K : Unit> convert2(value: Double, from: Derivative<out T, out K>, to: Derivative<out T, out K>): Double {
-    return value apply (from.a to to.a) apply (from.b to to.b)
+    return value apply (from.a to to.a) apply (to.b to from.b)
 }
 
 @JvmName("apply2")
 infix fun <T : Unit, K : Unit> Number.apply(units: Pair<Derivative<out T, out K>, Derivative<out T, out K>>): Double {
     return convert2(this.toDouble(), units.first, units.second)
+}
+
+fun main() {
+    print(12 apply (Feet / Seconds to Kilometres / Hours))
 }
