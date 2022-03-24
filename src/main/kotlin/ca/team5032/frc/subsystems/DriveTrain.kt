@@ -15,7 +15,10 @@ import edu.wpi.first.wpilibj.I2C
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.drive.MecanumDrive
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 // https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/mecanumbot/Drivetrain.java
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-odometry.html
@@ -118,23 +121,12 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             state(State.Idle)
         }
 
+        var (ySpeed, xSpeed, zRotation) = getInput()
+
         if (controller.pov != -1) {
-            drive.drivePolar(
-                MICRO_SPEED.value,
-                controller.pov.toDouble(),
-                0.0
-            )
-            return
+            ySpeed = MICRO_SPEED.value * cos(controller.pov.toDouble() * (PI / 180.0))
+            xSpeed = MICRO_SPEED.value * sin(controller.pov.toDouble() * (PI / 180.0))
         }
-
-        val additionalMult = if (controller.xButton) 1.65 else 1.0
-        val (ySpeed, xSpeed, zRotation) = getInput()
-
-//        drive.driveCartesian(
-//            ySpeed,
-//            xSpeed,
-//            zRotation
-//        )
 
         val motorOutputs = driveCartesianIK(ySpeed, xSpeed, zRotation)
         frontLeft.set(motorOutputs[0])
@@ -152,7 +144,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             frontRight.selectedSensorVelocity apply (encoder to rps) apply ANGULAR_CONVERSION,
             rearRight.selectedSensorVelocity apply (encoder to rps) apply ANGULAR_CONVERSION
         )
-        val gyroRadians = Rotation2d.fromDegrees(-gyro.angle)
+        val gyroRadians = Rotation2d.fromDegrees(-gyro.yaw.toDouble())
 
         pose = odometry.update(gyroRadians, wheelSpeeds)
         field.robotPose = odometry.poseMeters

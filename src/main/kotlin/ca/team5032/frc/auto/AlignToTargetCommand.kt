@@ -12,8 +12,9 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline) : Com
     private val limelight = Perseverance.limelight
 
     override fun initialize() {
-        limelight.pipeline = targetPipeline
         Perseverance.drive.state = DriveTrain.State.Autonomous
+
+        limelight.pipeline = targetPipeline
         limelight.state = Limelight.State.Targeting
     }
 
@@ -21,27 +22,20 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline) : Com
         if (limelight.hasTarget()) {
             // Turn towards target.
             val distance = limelight.target.offset.x
-            //val direction = sign(limelight.target.offset.x)
 
             val output = limelight.controller.calculate(distance, 0.0)
             val absolute = abs(output)
-            val sign = sign(output)
+            val sign = -sign(output)
+
             val remapped = absolute * (1 - 0.26) + 0.26
 
             Perseverance.drive.autonomousInput = DriveTrain.DriveInput(
                 0.0,
                 0.0,
-                -(sign * remapped)
+                sign * remapped
             )
 
-            if (limelight.controller.atSetpoint()) {
-                Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 1.0)
-                Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0)
-            } else {
-                Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 0.0)
-                Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kLeftRumble, 0.0)
-            }
-            //if (limelight.controller.atSetpoint()) this.cancel()
+            if (limelight.controller.atSetpoint()) this.cancel()
         } else {
             // Turn CW until hasTarget.
             Perseverance.drive.autonomousInput = DriveTrain.DriveInput(0.0, 0.0, 0.5)
@@ -50,12 +44,9 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline) : Com
 
     override fun end(interrupted: Boolean) {
         Perseverance.drive.state = DriveTrain.State.Idle
+
+        limelight.pipeline = Limelight.Pipeline.ReflectiveTape // Default pipeline, most useful during teleop.
         limelight.state = Limelight.State.Idle
-
-        limelight.pipeline = Limelight.Pipeline.BlueBall
-
-        Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 0.0)
-        Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kLeftRumble, 0.0)
     }
 
 }

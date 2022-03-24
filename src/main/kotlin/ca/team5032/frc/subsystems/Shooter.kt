@@ -1,14 +1,12 @@
 package ca.team5032.frc.subsystems
 
-import ca.team5032.frc.utils.DoubleProperty
-import ca.team5032.frc.utils.SHOOTER_ID
-import ca.team5032.frc.utils.Subsystem
-import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.math.controller.BangBangController
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
+import kotlin.apply
 import kotlin.math.abs
 
 class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
@@ -33,7 +31,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
 
     // TODO: PID instead of bang bang. Start using PID way more.
-    private val controller = PIDController(0.0, 0.0, 0.0)
+    //private val controller = PIDController(0.0, 0.0, 0.0)
     private val bangBangController = BangBangController()
     private val feedforward = SimpleMotorFeedforward(kS, kV)
 
@@ -45,7 +43,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
         tab.addNumber("Encoder Value") { shooterFalcon.selectedSensorVelocity }
         tab.addNumber("Current RPM", ::getRPM)
-        tab.add(controller)
+        //tab.add(controller)
 
         buildConfig(RPM_THRESHOLD, TARGET_RPM, POWER)
     }
@@ -68,10 +66,10 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 //                        12 * bangBangController.calculate(getRPM(), it.speed)
 //                                + 0.9 * feedforward.calculate(it.speed apply (Degrees / Seconds to Rotations / Minutes))
 //                    )
-                    shooterFalcon.setVoltage(controller.calculate(getRPM(), it.speed))
+                    shooterFalcon.setVoltage(12 * bangBangController.calculate(getRPM(), it.speed))
                 is State.RampingUp ->
                     // In Principle:
-                    shooterFalcon.setVoltage(controller.calculate(getRPM(), it.targetSpeed))
+                    shooterFalcon.setVoltage(12 * bangBangController.calculate(getRPM(), it.targetSpeed))
 //                    shooterFalcon.setVoltage(
 //                        3.7 * bangBangController.calculate(getRPM(), it.targetSpeed)
 //                                + 1 * feedforward.calculate(it.targetSpeed apply (Degrees / Seconds to Rotations / Minutes))
@@ -89,7 +87,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
     // units per 100 millisecond -> rotations per minute.
     // 2048 units = 1 rotation.
-    private fun getRPM() = shooterFalcon.selectedSensorVelocity / 2048 * 10 * 60
+    private fun getRPM() = shooterFalcon.selectedSensorVelocity apply (TalonTicks / (100 * Millis) to Rotations / Minutes)
 
     private fun withinThreshold(a: Double, b: Double, threshold: Double): Boolean {
         return abs(a - b) < threshold

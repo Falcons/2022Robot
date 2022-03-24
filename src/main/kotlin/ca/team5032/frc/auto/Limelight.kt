@@ -7,6 +7,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.PneumaticsModuleType
 import edu.wpi.first.wpilibj.drive.Vector2d
+import kotlin.math.abs
 
 class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
 
@@ -41,7 +42,6 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
     }
 
     sealed class State {
-        object OnTarget : State()
         object Targeting : State()
         object Idle : State()
     }
@@ -102,7 +102,6 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
     }
 
     override fun periodic() {
-        // Make sure solenoid is correctly positioned.
         if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
             solenoid.set(DoubleSolenoid.Value.kForward)
         else if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
@@ -114,17 +113,14 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
                     cameraMode = CameraMode.Processing
                     ledMode = LEDMode.On
                 }
-                is State.OnTarget -> ledMode = LEDMode.On
-                is State.Idle -> drive()
+                is State.Idle -> {
+                    cameraMode = CameraMode.Drive
+                    ledMode = LEDMode.Off
+                }
             }
         }
     }
 
     fun hasTarget(): Boolean = networkTable.getEntry("tv").getNumber(0) == 1.0
-
-    private fun drive() {
-        ledMode = LEDMode.On
-        cameraMode = CameraMode.Processing
-    }
 
 }

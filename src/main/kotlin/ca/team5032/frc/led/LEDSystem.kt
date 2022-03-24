@@ -23,6 +23,7 @@ class LEDSystem : SubsystemBase(), Tabbed {
     }
 
     override fun periodic() {
+        // TODO: Nice colours!
         when (Perseverance.limelight.solenoid.get()) {
             DoubleSolenoid.Value.kForward -> blinkin.set(.73) // green
             DoubleSolenoid.Value.kReverse -> blinkin.set(.83) // blue
