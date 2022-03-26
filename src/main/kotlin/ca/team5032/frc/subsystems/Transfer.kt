@@ -1,6 +1,8 @@
 package ca.team5032.frc.subsystems
 
+import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
+import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
 import edu.wpi.first.wpilibj.DigitalInput
 
@@ -20,18 +22,20 @@ class Transfer : Subsystem<Transfer.State>("Transfer", State.Idle), Tabbed {
     private val sensor = DigitalInput(TRANSFER_SENSOR_ID)
 
     init {
+        transferVictor.setNeutralMode(NeutralMode.Brake)
+
         buildConfig(DEFAULT_POWER)
     }
 
     override fun periodic() {
         state.let {
-//            if (hasBall() &&
-//                it is State.TransferringUp &&
-//                Perseverance.shooter.state !is Shooter.State.AtSpeed
-//            ) {
-//                transferVictor.set(0.0)
-//                return
-//            }
+            if (hasBall() &&
+                it is State.TransferringUp &&
+                Perseverance.shooter.state !is Shooter.State.AtSpeed
+            ) {
+                transferVictor.set(0.0)
+                return
+            }
 
             when (it) {
                 State.TransferringUp -> transferVictor.set(-DEFAULT_POWER.value)

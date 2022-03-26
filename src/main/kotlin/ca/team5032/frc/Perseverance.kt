@@ -51,7 +51,7 @@ object Perseverance : TimedRobot(0.02) {
 
         // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
-            .whenPressed({ shooter.shoot(3000.0) }, shooter).whenReleased(shooter::stop, shooter)
+            .whenPressed({ shooter.shoot() }, shooter).whenReleased(shooter::stop, shooter)
 
         // Register transfer commands.
         POVButton(peripheralController, 270)
@@ -64,11 +64,15 @@ object Perseverance : TimedRobot(0.02) {
         POVButton(peripheralController, 180)
             .whenPressed(intake::deployIntake, intake)
 
-
-        val command = AlignToTargetCommand(Limelight.Pipeline.RedBall)
-        JoystickButton(peripheralController, XboxController.Button.kLeftBumper.value)
+        val command = AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape, -1)
+        JoystickButton(driveController, XboxController.Button.kLeftBumper.value)
             .whenPressed({ command.schedule() }, limelight)
             .whenReleased({ command.cancel() }, limelight)
+
+        val command2 = AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape, 1)
+        JoystickButton(driveController, XboxController.Button.kRightBumper.value)
+            .whenPressed({ command2.schedule() }, limelight)
+            .whenReleased({ command2.cancel() }, limelight)
     }
 
 }

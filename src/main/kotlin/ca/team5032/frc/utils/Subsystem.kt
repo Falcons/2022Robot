@@ -37,7 +37,7 @@ abstract class Subsystem<T : Any>(private val subsystemName: String, defaultStat
         val transition = StateTransition(state, newState, this)
         transitionEvents.forEach { it.accept(transition) }
 
-        logger.config("Changing state, from: ${state.javaClass.simpleName} to: ${newState.javaClass.simpleName}\n")
+        logger.info("[${subsystemName}] Changing state, from: ${state.javaClass.simpleName} to: ${newState.javaClass.simpleName}\n")
         state = newState
     }
 

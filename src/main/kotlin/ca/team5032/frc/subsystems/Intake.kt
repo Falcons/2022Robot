@@ -4,8 +4,8 @@ import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX
 import edu.wpi.first.wpilibj.DigitalInput
+import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.PneumaticsModuleType
-import edu.wpi.first.wpilibj.Solenoid
 
 class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
 
@@ -23,10 +23,11 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
     private val intakeVictor = WPI_VictorSPX(INTAKE_ID)
     private val sensor = DigitalInput(INTAKE_SENSOR_ID)
 
-    val intakeSolenoid = Solenoid(PneumaticsModuleType.CTREPCM, INTAKE_SOLENOID_ID)
+    val intakeSolenoid = DoubleSolenoid(PneumaticsModuleType.CTREPCM, INTAKE_SOLENOID_1_ID, INTAKE_SOLENOID_2_ID)
 
     init {
         tab.addString("intake state") { state.javaClass.simpleName }
+        raiseIntake()
 
         buildConfig(DEFAULT_POWER)
     }
@@ -37,6 +38,12 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
                 intakeVictor.set(0.0)
                 return
             }
+
+//            if ((it is State.Intaking || it is State.Ejecting) && intakeSolenoid.get() != DoubleSolenoid.Value.kReverse) {
+//                deployIntake()
+//            } else if (it is State.Idle && intakeSolenoid.get() != DoubleSolenoid.Value.kForward) {
+//                raiseIntake()
+//            }
 
             when (it) {
                 is State.Intaking -> intakeVictor.set(-DEFAULT_POWER.value)
@@ -50,8 +57,8 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
     fun eject() = state(State.Ejecting)
     fun stop() = state(State.Idle)
 
-    fun deployIntake() = intakeSolenoid.set(false)
-    fun raiseIntake() = intakeSolenoid.set(true)
+    fun deployIntake() = intakeSolenoid.set(DoubleSolenoid.Value.kReverse)
+    fun raiseIntake() = intakeSolenoid.set(DoubleSolenoid.Value.kForward)
 
     fun hasBall() = sensor.get()
 

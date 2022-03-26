@@ -21,4 +21,5 @@ const val TRANSFER_SENSOR_ID = 3
 // ID of the intake victor.
 const val INTAKE_ID = 7
 const val INTAKE_SENSOR_ID = 2
-const val INTAKE_SOLENOID_ID = 2
+const val INTAKE_SOLENOID_1_ID = 2
+const val INTAKE_SOLENOID_2_ID = 3

@@ -2,16 +2,20 @@ package ca.team5032.frc.subsystems
 
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
+import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
-import com.kauailabs.navx.frc.AHRS
+import edu.wpi.first.math.controller.ProfiledPIDController
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds
-import edu.wpi.first.wpilibj.I2C
+import edu.wpi.first.math.trajectory.TrapezoidProfile
+import edu.wpi.first.util.sendable.Sendable
+import edu.wpi.first.util.sendable.SendableBuilder
+import edu.wpi.first.wpilibj.ADIS16448_IMU
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.drive.MecanumDrive
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
@@ -23,7 +27,7 @@ import kotlin.math.sin
 // https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/mecanumbot/Drivetrain.java
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-odometry.html
 // https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/mecanum-drive-kinematics.html
-class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
+class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sendable {
 
     companion object {
         // Threshold to consider the robot as moving  (receiving joystick input)
@@ -52,7 +56,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     private val field = Field2d()
 
-    private val gyro = AHRS(I2C.Port.kOnboard)
+    private val gyro = ADIS16448_IMU()
     private val controller: XboxController = Perseverance.driveController
 
     private val drive: MecanumDrive
@@ -63,6 +67,8 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     private val odometry: MecanumDriveOdometry
     private var pose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
+
+    private val rotationController = ProfiledPIDController(0.0, 0.0, 0.0, TrapezoidProfile.Constraints(6.28, 3.14))
 
     private val hasInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD.value
@@ -78,12 +84,18 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
         // TODO: A motor configuration profile utility for configuring all motors as required (also impl current lims)
         // Would also wrap all the motors, allowing increased logging (temps).
-        listOf(frontLeft, rearLeft, frontRight, rearRight).forEach { it.setNeutralMode(NeutralMode.Brake) }
+        listOf(frontLeft, rearLeft, frontRight, rearRight)
+            .forEach { it.setNeutralMode(NeutralMode.Brake) }
 
         drive = MecanumDrive(
             frontLeft, rearLeft, frontRight, rearRight
         )
         drive.setDeadband(0.0)
+
+        tab.add("ADIS Gyro", gyro)
+        tab.add("Field2d", field)
+
+        gyro.calibrate()
 
         val kinematics = MecanumDriveKinematics(
             Translation2d(0.31, 0.28),
@@ -93,10 +105,11 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         )
         // TODO: Is it possible to construct starting pose from distance to HUB and balls? might not be worth the calculation
         // for auto tho.
-        odometry = MecanumDriveOdometry(kinematics, gyro.rotation2d)
+        odometry = MecanumDriveOdometry(kinematics, Rotation2d(gyro.gyroAngleZ))
 
-        tab.add("Gyro", gyro)
-        tab.add("Field", field)
+        listOf(frontLeft, rearLeft, frontRight, rearRight)
+            .forEach { it.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor) }
+
         buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
 
@@ -115,10 +128,12 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
     override fun periodic() {
         if (Perseverance.isDisabled) return
 
-        if (hasInput) {
-            state(State.Driving)
-        } else if (state !is State.Autonomous) {
-            state(State.Idle)
+        if (state !is State.Autonomous) {
+            if (hasInput) {
+                state(State.Driving)
+            } else if (state !is State.Idle) {
+                state(State.Idle)
+            }
         }
 
         var (ySpeed, xSpeed, zRotation) = getInput()
@@ -144,10 +159,14 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             frontRight.selectedSensorVelocity apply (encoder to rps) apply ANGULAR_CONVERSION,
             rearRight.selectedSensorVelocity apply (encoder to rps) apply ANGULAR_CONVERSION
         )
-        val gyroRadians = Rotation2d.fromDegrees(-gyro.yaw.toDouble())
+        val gyroRadians = Rotation2d.fromDegrees(-gyro.gyroAngleZ)
 
         pose = odometry.update(gyroRadians, wheelSpeeds)
         field.robotPose = odometry.poseMeters
+    }
+
+    override fun initSendable(builder: SendableBuilder) {
+        builder.addDoubleProperty("Gyroscope Reading", { gyro.gyroAngleZ }) {}
     }
 
 }

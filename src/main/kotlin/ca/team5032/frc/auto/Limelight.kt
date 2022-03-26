@@ -7,7 +7,6 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.PneumaticsModuleType
 import edu.wpi.first.wpilibj.drive.Vector2d
-import kotlin.math.abs
 
 class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
 
@@ -42,7 +41,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
     }
 
     sealed class State {
-        object Targeting : State()
+        data class Targeting(val pipeline: Pipeline) : State()
         object Idle : State()
     }
 
@@ -96,20 +95,22 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
             it.addDoubleProperty("Offset X", { target.offset.x }) {}
         }
 
-        pipeline = Pipeline.ReflectiveTape
+        //pipeline = Pipeline.RedBall
+        //state(State.Targeting(Pipeline.RedBall))
 
         tab.add(controller)
     }
 
     override fun periodic() {
-        if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
+        if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
             solenoid.set(DoubleSolenoid.Value.kForward)
-        else if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
+        else if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
             solenoid.set(DoubleSolenoid.Value.kReverse)
 
         state.let {
             when (it) {
                 is State.Targeting -> {
+                    pipeline = it.pipeline
                     cameraMode = CameraMode.Processing
                     ledMode = LEDMode.On
                 }
