@@ -63,10 +63,9 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     }
 
     override fun periodic() {
-        //  mutex
         state.let {
             // Simple state machine.
-            if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value)) {
+            if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value) && it.targetSpeed() != 2000.0) {
                 state(State.AtSpeed(it.targetSpeed))
             } else if (it is State.AtSpeed && !withinThreshold(getRPM(), it.speed(), RPM_THRESHOLD.value)) {
                 state(State.RampingUp(it.speed))
@@ -74,31 +73,23 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
             when (it) {
                 is State.AtSpeed -> {
-                    // Assumes feedforward gives passive voltage to maintain speed?
-                    //shooterFalcon.setVoltage(feedforward.calculate(it.speed))
                     shooterFalcon.setVoltage(
-                        //12 * bangBangController.calculate(getRPM(), it.speed)
                         + 1.05 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
+
                     Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
 
                     if (it.speed() != 2000.0) {
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 1.0)
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0)
                     }
-                    //shooterFalcon.setVoltage(12 * bangBangController.calculate(getRPM(), it.speed))
-                    //shooterFalcon.setVoltage(controller.calculate(getRPM(), it.speed))
                 }
                 is State.RampingUp -> {
                     // In Principle:
-                    //shooterFalcon.setVoltage(12 * bangBangController.calculate(getRPM(), it.targetSpeed))
                     Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
                     shooterFalcon.setVoltage(
-                        //12 * bangBangController.calculate(getRPM(), it.targetSpeed)
-                        +1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
+                        + 1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
-                    //shooterFalcon.set(TalonFXControlMode.MotionMagic)
-                    //shooterFalcon.setVoltage(controller.calculate(getRPM(), it.targetSpeed))
                 }
                 is State.Idle -> {
                     shooterFalcon.set(0.0)
@@ -110,7 +101,6 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         }
     }
 
-    // TODO: Look into making this entire project multithreaded, would help with auto as well.
     fun shoot() {
         Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
         state(State.RampingUp(::getTargetRPM))

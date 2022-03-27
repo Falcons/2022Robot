@@ -2,6 +2,7 @@ package ca.team5032.frc
 
 import ca.team5032.frc.auto.AlignToTargetCommand
 import ca.team5032.frc.auto.Limelight
+import ca.team5032.frc.auto.ShootOneCommand
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.wpilibj.TimedRobot
@@ -24,7 +25,7 @@ object Perseverance : TimedRobot(0.02) {
     val limelight = Limelight()
     val led = LEDSystem()
 
-    const val debugMode = true
+    val shootOneAutonomousCommand = ShootOneCommand()
 
     override fun robotInit() {
         //LiveWindow.disableAllTelemetry()
@@ -73,6 +74,14 @@ object Perseverance : TimedRobot(0.02) {
         JoystickButton(driveController, XboxController.Button.kRightBumper.value)
             .whenPressed({ command2.schedule() }, limelight)
             .whenReleased({ command2.cancel() }, limelight)
+    }
+
+    override fun autonomousInit() {
+        shootOneAutonomousCommand.schedule()
+    }
+
+    override fun autonomousExit() {
+        shootOneAutonomousCommand.cancel()
     }
 
 }

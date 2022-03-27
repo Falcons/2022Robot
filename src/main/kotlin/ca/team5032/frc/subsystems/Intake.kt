@@ -23,7 +23,7 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
     private val intakeVictor = WPI_VictorSPX(INTAKE_ID)
     private val sensor = DigitalInput(INTAKE_SENSOR_ID)
 
-    val intakeSolenoid = DoubleSolenoid(PneumaticsModuleType.CTREPCM, INTAKE_SOLENOID_1_ID, INTAKE_SOLENOID_2_ID)
+    private val intakeSolenoid = DoubleSolenoid(PneumaticsModuleType.CTREPCM, INTAKE_SOLENOID_1_ID, INTAKE_SOLENOID_2_ID)
 
     init {
         tab.addString("intake state") { state.javaClass.simpleName }
@@ -38,12 +38,6 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
                 intakeVictor.set(0.0)
                 return
             }
-
-//            if ((it is State.Intaking || it is State.Ejecting) && intakeSolenoid.get() != DoubleSolenoid.Value.kReverse) {
-//                deployIntake()
-//            } else if (it is State.Idle && intakeSolenoid.get() != DoubleSolenoid.Value.kForward) {
-//                raiseIntake()
-//            }
 
             when (it) {
                 is State.Intaking -> intakeVictor.set(-DEFAULT_POWER.value)

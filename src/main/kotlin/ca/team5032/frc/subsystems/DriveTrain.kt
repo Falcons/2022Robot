@@ -46,7 +46,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
         val ANGULAR_CONVERSION = 0.47877872 * (Metres / Rotations)
     }
 
-    data class DriveInput(val ySpeed: Double, val xSpeed: Double, val zRotation: Double)
+    data class DriveInput(var ySpeed: Double, var xSpeed: Double, var zRotation: Double)
 
     sealed class State {
         object Autonomous : State() // TODO: Proper autonomous mode for all subsystems, locks normal input and only controllable through auto.
@@ -59,7 +59,6 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
     private val gyro = ADIS16448_IMU()
     private val controller: XboxController = Perseverance.driveController
 
-    private val drive: MecanumDrive
     private val frontLeft = WPI_TalonFX(FRONT_LEFT_ID)
     private val rearLeft = WPI_TalonFX(REAR_LEFT_ID)
     private val frontRight = WPI_TalonFX(FRONT_RIGHT_ID)
@@ -68,6 +67,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
     private val odometry: MecanumDriveOdometry
     private var pose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
 
+    val autonomousInput = DriveInput(0.0, 0.0, 0.0)
     private val rotationController = ProfiledPIDController(0.0, 0.0, 0.0, TrapezoidProfile.Constraints(6.28, 3.14))
 
     private val hasInput: Boolean
@@ -75,8 +75,6 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
                 || abs(controller.leftX) > DEADBAND_THRESHOLD.value
                 || abs(controller.rightX) > DEADBAND_THRESHOLD.value
                 || controller.pov != -1
-
-    var autonomousInput = DriveInput(0.0, 0.0, 0.0)
 
     init {
         frontRight.inverted = true
@@ -86,11 +84,6 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
         // Would also wrap all the motors, allowing increased logging (temps).
         listOf(frontLeft, rearLeft, frontRight, rearRight)
             .forEach { it.setNeutralMode(NeutralMode.Brake) }
-
-        drive = MecanumDrive(
-            frontLeft, rearLeft, frontRight, rearRight
-        )
-        drive.setDeadband(0.0)
 
         tab.add("ADIS Gyro", gyro)
         tab.add("Field2d", field)
@@ -138,9 +131,11 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
 
         var (ySpeed, xSpeed, zRotation) = getInput()
 
-        if (controller.pov != -1) {
-            ySpeed = MICRO_SPEED.value * cos(controller.pov.toDouble() * (PI / 180.0))
-            xSpeed = MICRO_SPEED.value * sin(controller.pov.toDouble() * (PI / 180.0))
+        if (state is State.Driving) {
+            if (controller.pov != -1) {
+                ySpeed = MICRO_SPEED.value * cos(controller.pov.toDouble() * (PI / 180.0))
+                xSpeed = MICRO_SPEED.value * sin(controller.pov.toDouble() * (PI / 180.0))
+            }
         }
 
         val motorOutputs = driveCartesianIK(ySpeed, xSpeed, zRotation)

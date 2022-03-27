@@ -9,10 +9,19 @@ import kotlin.math.sign
 
 class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, private val mult: Int) : CommandBase() {
 
+    private var ticksAtSetpoint = 0
+
+    // Must be at the setpoint for 0.1 seconds.
+    private var tickThreshold = 0.1 / Perseverance.period
+
+    private val minimumRotationSpeed = 0.26
+
     override fun initialize() {
         Perseverance.drive.state = DriveTrain.State.Autonomous
 
         limelight.state = Limelight.State.Targeting(targetPipeline)
+
+        ticksAtSetpoint = 0
     }
 
     override fun execute() {
@@ -27,22 +36,33 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, priva
             val absolute = abs(output)
             val sign = -sign(output)
 
-            val remapped = absolute * (1 - 0.26) + 0.26
+            val remapped = absolute * (1 - minimumRotationSpeed) + minimumRotationSpeed
 
-            Perseverance.drive.autonomousInput = DriveTrain.DriveInput(0.0, 0.0, sign * remapped)
+            Perseverance.drive.autonomousInput.zRotation = sign * remapped
 
-            if (limelight.controller.atSetpoint()) this.cancel()
+            // TODO: Remove, keep aligning when going to shoot?
+            if (limelight.controller.atSetpoint()) {
+                ticksAtSetpoint++
+            } else {
+                ticksAtSetpoint = 0
+            }
         } else {
-            // Turn CW until hasTarget.
-            Perseverance.drive.autonomousInput = DriveTrain.DriveInput(0.0, 0.0, 0.5 * mult)
+            // Turn until hasTarget.
+            Perseverance.drive.autonomousInput.zRotation = 0.5 * mult
+
+            ticksAtSetpoint = 0
         }
     }
 
     override fun end(interrupted: Boolean) {
-        Perseverance.drive.autonomousInput = DriveTrain.DriveInput(0.0, 0.0, 0.0)
+        Perseverance.drive.autonomousInput.zRotation = 0.0
 
         Perseverance.drive.state = DriveTrain.State.Idle
         limelight.state = Limelight.State.Idle
+    }
+
+    override fun isFinished(): Boolean {
+        return ticksAtSetpoint >= tickThreshold
     }
 
 }

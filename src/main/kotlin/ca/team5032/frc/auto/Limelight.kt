@@ -102,12 +102,14 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
     }
 
     override fun periodic() {
-        if (pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
-            solenoid.set(DoubleSolenoid.Value.kForward)
-        else if (pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
-            solenoid.set(DoubleSolenoid.Value.kReverse)
-
         state.let {
+            if (it is State.Targeting) {
+                if (it.pipeline != Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kForward)
+                    solenoid.set(DoubleSolenoid.Value.kForward)
+                else if (it.pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
+                    solenoid.set(DoubleSolenoid.Value.kReverse)
+            }
+
             when (it) {
                 is State.Targeting -> {
                     pipeline = it.pipeline
