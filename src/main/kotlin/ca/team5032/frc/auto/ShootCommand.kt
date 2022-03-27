@@ -29,9 +29,10 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
             totalShot ++
             reachedSpeed = false
 
-            if (ballCount == 2 && totalShot == 1) Perseverance.intake.stop() // May need a window before stopping.
             if (totalShot == ballCount) this.cancel()
         }
+
+        if (ballCount == 2 && totalShot == 1 && Perseverance.transfer.hasBall()) Perseverance.intake.stop()
     }
 
     override fun end(interrupted: Boolean) {
