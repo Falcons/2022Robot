@@ -66,9 +66,9 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         state.let {
             // Simple state machine.
             if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value) && it.targetSpeed() != 2000.0) {
-                state(State.AtSpeed(it.targetSpeed))
+                state = State.AtSpeed(it.targetSpeed)
             } else if (it is State.AtSpeed && !withinThreshold(getRPM(), it.speed(), RPM_THRESHOLD.value)) {
-                state(State.RampingUp(it.speed))
+                state = State.RampingUp(it.speed)
             }
 
             when (it) {
@@ -103,12 +103,12 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
     fun shoot() {
         Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
-        state(State.RampingUp(::getTargetRPM))
+        state = State.RampingUp(::getTargetRPM)
     }
 
     fun stop() {
         Perseverance.limelight.state = Limelight.State.Idle
-        state(State.Idle)
+        state = State.Idle
     }
 
     private fun getTargetRPM(): Double {

@@ -123,9 +123,9 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
 
         if (state !is State.Autonomous) {
             if (hasInput) {
-                state(State.Driving)
+                state = State.Driving
             } else if (state !is State.Idle) {
-                state(State.Idle)
+                state = State.Idle
             }
         }
 

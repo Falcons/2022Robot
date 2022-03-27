@@ -47,9 +47,9 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
         }
     }
 
-    fun intake() = state(State.Intaking)
-    fun eject() = state(State.Ejecting)
-    fun stop() = state(State.Idle)
+    fun intake() { state = State.Intaking }
+    fun eject() { state = State.Ejecting }
+    fun stop() { state = State.Idle }
 
     fun deployIntake() = intakeSolenoid.set(DoubleSolenoid.Value.kReverse)
     fun raiseIntake() = intakeSolenoid.set(DoubleSolenoid.Value.kForward)

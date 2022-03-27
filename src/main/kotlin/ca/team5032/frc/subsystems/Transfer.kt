@@ -45,9 +45,9 @@ class Transfer : Subsystem<Transfer.State>("Transfer", State.Idle), Tabbed {
         }
     }
 
-    fun up() = state(State.TransferringUp)
-    fun down() = state(State.TransferringOut)
-    fun stop() = state(State.Idle)
+    fun up() { state = State.TransferringUp }
+    fun down() { state = State.TransferringOut }
+    fun stop() { state = State.Idle }
 
     fun hasBall() = !sensor.get()
 

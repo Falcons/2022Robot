@@ -95,10 +95,17 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
             it.addDoubleProperty("Offset X", { target.offset.x }) {}
         }
 
-        //pipeline = Pipeline.RedBall
-        //state(State.Targeting(Pipeline.RedBall))
+        state = State.Targeting(Pipeline.ReflectiveTape)
+        cameraMode = CameraMode.Processing
+        ledMode = LEDMode.On
 
         tab.add(controller)
+    }
+
+    override fun onStateChange(oldState: State, newState: State) {
+        if (newState is State.Targeting) {
+            pipeline = newState.pipeline
+        }
     }
 
     override fun periodic() {
@@ -109,21 +116,9 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
                 else if (it.pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
                     solenoid.set(DoubleSolenoid.Value.kReverse)
             }
-
-            when (it) {
-                is State.Targeting -> {
-                    pipeline = it.pipeline
-                    cameraMode = CameraMode.Processing
-                    ledMode = LEDMode.On
-                }
-                is State.Idle -> {
-                    cameraMode = CameraMode.Drive
-                    ledMode = LEDMode.Off
-                }
-            }
         }
     }
 
-    fun hasTarget(): Boolean = networkTable.getEntry("tv").getNumber(0) == 1.0
+    fun hasTarget() = networkTable.getEntry("tv").getNumber(0) == 1.0
 
 }

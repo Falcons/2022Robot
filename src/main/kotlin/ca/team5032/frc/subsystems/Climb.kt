@@ -49,8 +49,8 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
         }
     }
 
-    fun up() = state(State.Up)
-    fun down() = state(State.Down)
-    fun stop() = state(State.Idle)
+    fun up() { state = State.Up }
+    fun down() { state = State.Down }
+    fun stop() { state = State.Idle }
 
 }
