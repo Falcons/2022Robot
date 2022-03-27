@@ -58,9 +58,9 @@ class MecanumLinearOdometry(vararg falcons: WPI_TalonFX, private val unit: Dista
 
     private fun getCurrentAbsolutePosition(): Double {
         return (falcons.sumOf { it.sensorCollection.integratedSensorPosition } / falcons.size)
-            .apply(TalonTicks / (100 * Millis) to Rotations / Seconds)
+            .apply(TalonTicks to Rotations)
             .apply(DriveTrain.ANGULAR_CONVERSION)
-            .apply(Metres / Seconds to unit / Seconds)
+            .apply(Metres to unit)
     }
 
 }
