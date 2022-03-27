@@ -3,11 +3,14 @@ package ca.team5032.frc
 import ca.team5032.frc.auto.AlignToTargetCommand
 import ca.team5032.frc.auto.Limelight
 import ca.team5032.frc.auto.ShootOneCommand
+import ca.team5032.frc.auto.TaxiCommand
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.InstantCommand
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.button.POVButton
 
@@ -25,7 +28,11 @@ object Perseverance : TimedRobot(0.02) {
     val limelight = Limelight()
     val led = LEDSystem()
 
-    val shootOneAutonomousCommand = ShootOneCommand()
+    private val autonomousRoutine = SequentialCommandGroup(
+        TaxiCommand(),
+        ShootOneCommand(),
+        InstantCommand({ intake.deployIntake() })
+    )
 
     override fun robotInit() {
         //LiveWindow.disableAllTelemetry()
@@ -77,11 +84,11 @@ object Perseverance : TimedRobot(0.02) {
     }
 
     override fun autonomousInit() {
-        shootOneAutonomousCommand.schedule()
+        autonomousRoutine.schedule()
     }
 
     override fun autonomousExit() {
-        shootOneAutonomousCommand.cancel()
+        autonomousRoutine.cancel()
     }
 
 }

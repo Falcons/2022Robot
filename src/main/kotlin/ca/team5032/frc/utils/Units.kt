@@ -1,5 +1,7 @@
 package ca.team5032.frc.utils
 
+import ca.team5032.frc.Perseverance
+
 // TODO: If I get bored, rewrite this to be even more generic, but more typesafe, supporting infinite derivations of
 //  units, all SI units and more flexibility.
 
@@ -19,6 +21,7 @@ object TalonTicks : AngularDistance(1 / 2048.00)
 
 sealed class Time(conversionFactor: Double) : Unit(conversionFactor)
 object Millis : Time(1 / 1000.00)
+object Ticks : Time(0.02)
 object Seconds : Time(1.00)
 object Minutes : Time(60.00)
 object Hours : Time(3600.00)

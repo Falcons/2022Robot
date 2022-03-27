@@ -54,15 +54,15 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
         object Idle : State()
     }
 
+    val frontLeft = WPI_TalonFX(FRONT_LEFT_ID)
+    val rearLeft = WPI_TalonFX(REAR_LEFT_ID)
+    val frontRight = WPI_TalonFX(FRONT_RIGHT_ID)
+    val rearRight = WPI_TalonFX(REAR_RIGHT_ID)
+
     private val field = Field2d()
 
     private val gyro = ADIS16448_IMU()
     private val controller: XboxController = Perseverance.driveController
-
-    private val frontLeft = WPI_TalonFX(FRONT_LEFT_ID)
-    private val rearLeft = WPI_TalonFX(REAR_LEFT_ID)
-    private val frontRight = WPI_TalonFX(FRONT_RIGHT_ID)
-    private val rearRight = WPI_TalonFX(REAR_RIGHT_ID)
 
     private val odometry: MecanumDriveOdometry
     private var pose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
