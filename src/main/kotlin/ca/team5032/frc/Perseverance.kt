@@ -6,6 +6,8 @@ import ca.team5032.frc.auto.Limelight
 import ca.team5032.frc.auto.ShootAmountCommand
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
+import edu.wpi.first.cameraserver.CameraServer
+import edu.wpi.first.cscore.VideoSource
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.*
@@ -39,6 +41,13 @@ object Perseverance : TimedRobot(0.02) {
         //LiveWindow.disableAllTelemetry()
         //DriverStation.silenceJoystickConnectionWarning(true)
         registerCommands()
+
+        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
+
+         // Default configuration for the camera. 60fps 320p keepOpen.
+         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+         camera.setFPS(60)
+         camera.setResolution(320, 240)
     }
 
     override fun robotPeriodic() {
