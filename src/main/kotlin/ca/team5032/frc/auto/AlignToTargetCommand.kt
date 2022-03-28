@@ -12,21 +12,21 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, priva
     private var ticksAtSetpoint = 0
 
     // Must be at the setpoint for 0.1 seconds.
-    private var tickThreshold = 0.1 / Perseverance.period
+    private var tickThreshold = 0.2 / Perseverance.period
 
     private val minimumRotationSpeed = 0.26
 
     override fun initialize() {
-        Perseverance.drive.state = DriveTrain.State.Autonomous
+        Perseverance.drive.changeState(DriveTrain.State.Autonomous)
 
-        limelight.state = Limelight.State.Targeting(targetPipeline)
+        limelight.changeState(Limelight.State.Targeting(targetPipeline))
 
         ticksAtSetpoint = 0
     }
 
     override fun execute() {
-        Perseverance.drive.state = DriveTrain.State.Autonomous
-        limelight.state = Limelight.State.Targeting(targetPipeline)
+        Perseverance.drive.changeState(DriveTrain.State.Autonomous)
+        limelight.changeState(Limelight.State.Targeting(targetPipeline))
 
         if (limelight.hasTarget()) {
             // Turn towards target.
@@ -57,8 +57,8 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, priva
     override fun end(interrupted: Boolean) {
         Perseverance.drive.autonomousInput.zRotation = 0.0
 
-        Perseverance.drive.state = DriveTrain.State.Idle
-        limelight.state = Limelight.State.Idle
+        Perseverance.drive.changeState(DriveTrain.State.Idle)
+        limelight.changeState(Limelight.State.Idle)
     }
 
     override fun isFinished(): Boolean {

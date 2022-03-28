@@ -9,12 +9,23 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
     var reachedSpeed = false
     var totalShot = 0
 
+    var ticksWithoutBall = 0
+    var tickThreshold = 0.5 / Perseverance.period
+
     override fun initialize() {
+        reachedSpeed = false
+        totalShot = 0
+        ticksWithoutBall = 0
+
         Perseverance.shooter.shoot()
 
         // 1. Transfer has a ball
         if (Perseverance.transfer.hasBall() && ballCount >= 1) {
             Perseverance.transfer.up()
+        }
+        if (!Perseverance.transfer.hasBall() && Perseverance.intake.hasBall() && ballCount >= 1) {
+            Perseverance.transfer.up()
+            Perseverance.intake.intake()
         }
         // 2. Intake has a ball
         if (Perseverance.intake.hasBall() && ballCount == 2) {
@@ -33,6 +44,13 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
         }
 
         if (ballCount == 2 && totalShot == 1 && Perseverance.transfer.hasBall()) Perseverance.intake.stop()
+        if (!Perseverance.transfer.hasBall() && !Perseverance.intake.hasBall()) {
+            ticksWithoutBall ++
+
+            if (ticksWithoutBall >= tickThreshold) this.cancel()
+        } else {
+            ticksWithoutBall = 0
+        }
     }
 
     override fun end(interrupted: Boolean) {

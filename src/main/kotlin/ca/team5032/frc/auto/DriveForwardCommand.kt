@@ -6,7 +6,10 @@ import ca.team5032.frc.utils.MecanumLinearOdometry
 import ca.team5032.frc.utils.Metres
 import edu.wpi.first.wpilibj2.command.CommandBase
 
-class DriveForwardCommand(private val distance: Double) : CommandBase() {
+class DriveForwardCommand(private val seconds: Double) : CommandBase() {
+
+    var ticksSinceStart = 0
+    val maxTicks = seconds / Perseverance.period
 
     private val linearOdometry = MecanumLinearOdometry(
         Perseverance.drive.rearLeft,
@@ -17,23 +20,31 @@ class DriveForwardCommand(private val distance: Double) : CommandBase() {
     )
 
     override fun initialize() {
-        Perseverance.drive.state = DriveTrain.State.Autonomous
+        Perseverance.drive.changeState(DriveTrain.State.Autonomous)
+        ticksSinceStart = 0
 
         linearOdometry.zero()
     }
 
     override fun execute() {
-        if (linearOdometry.getElapsedDistance() < distance) {
+        ticksSinceStart ++
+
+        if (ticksSinceStart < maxTicks) {
             Perseverance.drive.autonomousInput.ySpeed = 0.6
         } else {
+            Perseverance.drive.autonomousInput.ySpeed = 0.0
             this.cancel()
         }
     }
 
     override fun end(interrupted: Boolean) {
-        Perseverance.drive.state = DriveTrain.State.Idle
+        Perseverance.drive.changeState(DriveTrain.State.Idle)
 
         Perseverance.drive.autonomousInput.ySpeed = 0.0
+    }
+
+    override fun isFinished(): Boolean {
+        return ticksSinceStart >= maxTicks
     }
 
 }

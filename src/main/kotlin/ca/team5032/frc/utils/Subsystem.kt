@@ -1,7 +1,6 @@
 package ca.team5032.frc.utils
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase
-import java.util.function.Consumer
 import java.util.logging.Logger
 
 enum class ControlState {
@@ -22,7 +21,6 @@ abstract class Subsystem<T : Any>(private val subsystemName: String, defaultStat
      * State is applied to control the subsystem and does not necessarily represent the true state of the component.
      */
     var state: T = defaultState
-        set(newState) = changeState(newState)
 
     /**
      * The control state represents how the subsystem is being controlled, either manually, automatically, or
@@ -33,7 +31,7 @@ abstract class Subsystem<T : Any>(private val subsystemName: String, defaultStat
 
     open fun onStateChange(oldState: T, newState: T) {}
 
-    private fun changeState(newState: T) {
+    fun changeState(newState: T) {
         onStateChange(state, newState)
 
         // logger.info("[${subsystemName}] Changing state, from: ${state.javaClass.simpleName} to: ${newState.javaClass.simpleName}\n")

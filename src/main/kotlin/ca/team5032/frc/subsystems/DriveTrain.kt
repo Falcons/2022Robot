@@ -5,19 +5,17 @@ import ca.team5032.frc.utils.*
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
-import edu.wpi.first.math.controller.ProfiledPIDController
+import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds
-import edu.wpi.first.math.trajectory.TrapezoidProfile
 import edu.wpi.first.util.sendable.Sendable
 import edu.wpi.first.util.sendable.SendableBuilder
 import edu.wpi.first.wpilibj.ADIS16448_IMU
 import edu.wpi.first.wpilibj.XboxController
-import edu.wpi.first.wpilibj.drive.MecanumDrive
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import kotlin.math.PI
 import kotlin.math.abs
@@ -61,14 +59,14 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
 
     private val field = Field2d()
 
-    private val gyro = ADIS16448_IMU()
+    val gyro = ADIS16448_IMU()
     private val controller: XboxController = Perseverance.driveController
 
     private val odometry: MecanumDriveOdometry
     private var pose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
 
     val autonomousInput = DriveInput(0.0, 0.0, 0.0)
-    private val rotationController = ProfiledPIDController(0.0, 0.0, 0.0, TrapezoidProfile.Constraints(6.28, 3.14))
+    val rotationController = PIDController(0.01, 0.0, 0.0)
 
     private val hasInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD.value
@@ -87,6 +85,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
 
         tab.add("ADIS Gyro", gyro)
         tab.add("Field2d", field)
+        //tab.add(rotationController)
 
         gyro.calibrate()
 
@@ -123,9 +122,9 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
 
         if (state !is State.Autonomous) {
             if (hasInput) {
-                state = State.Driving
+                changeState(State.Driving)
             } else if (state !is State.Idle) {
-                state = State.Idle
+                changeState(State.Idle)
             }
         }
 
@@ -154,14 +153,14 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed, Sen
             frontRight.selectedSensorVelocity apply (encoder to rps) apply ANGULAR_CONVERSION,
             rearRight.selectedSensorVelocity apply (encoder to rps) apply ANGULAR_CONVERSION
         )
-        val gyroRadians = Rotation2d.fromDegrees(-gyro.gyroAngleZ)
+        val gyroRadians = Rotation2d.fromDegrees(-gyro.angle)
 
         pose = odometry.update(gyroRadians, wheelSpeeds)
         field.robotPose = odometry.poseMeters
     }
 
     override fun initSendable(builder: SendableBuilder) {
-        builder.addDoubleProperty("Gyroscope Reading", { gyro.gyroAngleZ }) {}
+        builder.addDoubleProperty("Gyroscope Reading", { gyro.angle }) {}
     }
 
 }

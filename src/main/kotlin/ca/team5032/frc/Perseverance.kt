@@ -1,16 +1,17 @@
 package ca.team5032.frc
 
-import ca.team5032.frc.auto.AlignToTargetCommand
-import ca.team5032.frc.auto.DriveForwardCommand
-import ca.team5032.frc.auto.Limelight
-import ca.team5032.frc.auto.ShootAmountCommand
+import ca.team5032.frc.auto.*
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.cscore.VideoSource
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
-import edu.wpi.first.wpilibj2.command.*
+import edu.wpi.first.wpilibj.livewindow.LiveWindow
+import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.InstantCommand
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup
+import edu.wpi.first.wpilibj2.command.WaitCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.button.POVButton
 
@@ -30,15 +31,30 @@ object Perseverance : TimedRobot(0.02) {
 
     private val autonomousRoutine = SequentialCommandGroup(
         InstantCommand({ intake.deployIntake() }),
-        ParallelCommandGroup(
-            DriveForwardCommand(1.00),
-            StartEndCommand({ intake.intake() }, { intake.stop() }, intake)
-        ),
+        InstantCommand({ intake.intake() }),
+        DriveForwardCommand(1.00),
+        WaitCommand(0.8),
+        InstantCommand({ intake.stop() }),
+        RotateToAngleCommand(180.0),
         ShootAmountCommand(2)
+//        RotateToAngleCommand(-55.0),
+//        InstantCommand({
+//            intake.intake()
+//            transfer.up()
+//        }),
+//        DriveForwardCommand(1.75),
+//        RotateToAngleCommand(95.0),
+//        WaitCommand(0.4),
+//        InstantCommand({
+//            intake.stop()
+//            transfer.stop()
+//        }),
+//        ShootAmountCommand(1)
+
     )
 
     override fun robotInit() {
-        //LiveWindow.disableAllTelemetry()
+        LiveWindow.disableAllTelemetry()
         //DriverStation.silenceJoystickConnectionWarning(true)
         registerCommands()
 

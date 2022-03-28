@@ -3,6 +3,7 @@ package ca.team5032.frc.utils
 import ca.team5032.frc.subsystems.DriveTrain
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 
 // TODO: actually use this?
 class Falcon500(motorId: Int) : WPI_TalonFX(motorId) {
@@ -45,10 +46,13 @@ class MecanumLinearOdometry(vararg falcons: WPI_TalonFX, private val unit: Dista
 
     private val falcons = listOf(*falcons)
     private var startingPosition = 0.0
+    private val tab = Shuffleboard.getTab("Linear Odometry")
 
     fun zero() {
+        falcons.forEach { it.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor) }
+
         // Look into this: - for now, seems more reliable to just get a starting position.
-        // falcons.forEach { it.sensorCollection.setIntegratedSensorPosition(0.0) }
+        //falcons.forEach { it.sensorCollection.setIntegratedSensorPosition(0.0, 0) }
         startingPosition = getCurrentAbsolutePosition()
     }
 
@@ -57,7 +61,7 @@ class MecanumLinearOdometry(vararg falcons: WPI_TalonFX, private val unit: Dista
     }
 
     private fun getCurrentAbsolutePosition(): Double {
-        return (falcons.sumOf { it.sensorCollection.integratedSensorPosition } / falcons.size)
+        return (falcons.sumOf { it.selectedSensorPosition } / falcons.size)
             .apply(TalonTicks to Rotations)
             .apply(DriveTrain.ANGULAR_CONVERSION)
             .apply(Metres to unit)

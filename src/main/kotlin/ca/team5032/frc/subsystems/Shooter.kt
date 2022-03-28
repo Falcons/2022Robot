@@ -66,9 +66,9 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         state.let {
             // Simple state machine.
             if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value) && it.targetSpeed() != 2000.0) {
-                state = State.AtSpeed(it.targetSpeed)
+                changeState(State.AtSpeed(it.targetSpeed))
             } else if (it is State.AtSpeed && !withinThreshold(getRPM(), it.speed(), RPM_THRESHOLD.value)) {
-                state = State.RampingUp(it.speed)
+                changeState(State.RampingUp(it.speed))
             }
 
             when (it) {
@@ -77,7 +77,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                         + 1.05 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
 
-                    Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
+                    Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
 
                     if (it.speed() != 2000.0) {
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 1.0)
@@ -86,7 +86,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                 }
                 is State.RampingUp -> {
                     // In Principle:
-                    Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
+                    Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
                     shooterFalcon.setVoltage(
                         + 1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
@@ -102,13 +102,13 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     }
 
     fun shoot() {
-        Perseverance.limelight.state = Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape)
-        state = State.RampingUp(::getTargetRPM)
+        Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
+        changeState(State.RampingUp(::getTargetRPM))
     }
 
     fun stop() {
-        Perseverance.limelight.state = Limelight.State.Idle
-        state = State.Idle
+        Perseverance.limelight.changeState(Limelight.State.Idle)
+        changeState(State.Idle)
     }
 
     private fun getTargetRPM(): Double {

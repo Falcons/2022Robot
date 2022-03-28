@@ -95,7 +95,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
             it.addDoubleProperty("Offset X", { target.offset.x }) {}
         }
 
-        state = State.Targeting(Pipeline.ReflectiveTape)
+        changeState(State.Targeting(Pipeline.ReflectiveTape))
         cameraMode = CameraMode.Processing
         ledMode = LEDMode.On
 
