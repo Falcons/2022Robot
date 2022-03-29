@@ -37,34 +37,3 @@ class Falcon500(motorId: Int) : WPI_TalonFX(motorId) {
         }
 
 }
-
-/**
- * Until [edu.wpi.first.math.kinematics.MecanumDriveOdometry] is proven reliable, this simple class can be used
- * for Y axis odometry
- */
-class MecanumLinearOdometry(vararg falcons: WPI_TalonFX, private val unit: Distance) {
-
-    private val falcons = listOf(*falcons)
-    private var startingPosition = 0.0
-    private val tab = Shuffleboard.getTab("Linear Odometry")
-
-    fun zero() {
-        falcons.forEach { it.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor) }
-
-        // Look into this: - for now, seems more reliable to just get a starting position.
-        //falcons.forEach { it.sensorCollection.setIntegratedSensorPosition(0.0, 0) }
-        startingPosition = getCurrentAbsolutePosition()
-    }
-
-    fun getElapsedDistance(): Double {
-        return getCurrentAbsolutePosition() - startingPosition
-    }
-
-    private fun getCurrentAbsolutePosition(): Double {
-        return (falcons.sumOf { it.selectedSensorPosition } / falcons.size)
-            .apply(TalonTicks to Rotations)
-            .apply(DriveTrain.ANGULAR_CONVERSION)
-            .apply(Metres to unit)
-    }
-
-}

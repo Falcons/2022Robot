@@ -2,49 +2,52 @@ package ca.team5032.frc.auto
 
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.subsystems.Shooter
+import ca.team5032.frc.subsystems.Superstructure
 import edu.wpi.first.wpilibj2.command.CommandBase
 
 class ShootCommand(private val ballCount: Int) : CommandBase() {
 
-    var reachedSpeed = false
-    var totalShot = 0
+    private var hadBall = false
+    private var totalShot = 0
 
-    var ticksWithoutBall = 0
-    var tickThreshold = 0.5 / Perseverance.period
+    private var ticksWithoutBall = 0
+    private var tickThreshold = 0.5 / Perseverance.period
 
     override fun initialize() {
-        reachedSpeed = false
+        hadBall = false
         totalShot = 0
         ticksWithoutBall = 0
 
-        Perseverance.shooter.shoot()
+        Superstructure.shooter.shoot()
 
         // 1. Transfer has a ball
-        if (Perseverance.transfer.hasBall() && ballCount >= 1) {
-            Perseverance.transfer.up()
+        if (Superstructure.transfer.hasBall() && ballCount >= 1) {
+            Superstructure.transfer.up()
         }
-        if (!Perseverance.transfer.hasBall() && Perseverance.intake.hasBall() && ballCount >= 1) {
-            Perseverance.transfer.up()
-            Perseverance.intake.intake()
+        // TODO: shouldn't be needed once proper ball management is added
+        if (!Superstructure.transfer.hasBall() && Superstructure.intake.hasBall() && ballCount >= 1) {
+            Superstructure.transfer.up()
+            Superstructure.intake.cycle()
         }
         // 2. Intake has a ball
-        if (Perseverance.intake.hasBall() && ballCount == 2) {
-            Perseverance.intake.intake()
+        if (Superstructure.intake.hasBall() && ballCount == 2) {
+            Superstructure.intake.cycle()
         }
     }
 
     override fun execute() {
-        if (Perseverance.shooter.state is Shooter.State.AtSpeed) {
-            reachedSpeed = true
-        } else if (Perseverance.shooter.state is Shooter.State.RampingUp && reachedSpeed) { // Speed drops due to ball passing it
+        if (Superstructure.transfer.hasBall()) {
+            hadBall = true
+        // TODO: Make sure ball gets shot before shooter stops, perhaps a sensor is added after shooter?
+        } else if (!Superstructure.transfer.hasBall() && hadBall) { // Speed drops due to ball passing it
             totalShot ++
-            reachedSpeed = false
+            hadBall = false
 
             if (totalShot == ballCount) this.cancel()
         }
 
-        if (ballCount == 2 && totalShot == 1 && Perseverance.transfer.hasBall()) Perseverance.intake.stop()
-        if (!Perseverance.transfer.hasBall() && !Perseverance.intake.hasBall()) {
+        if (ballCount == 2 && totalShot == 1 && Superstructure.transfer.hasBall()) Superstructure.intake.stop()
+        if (!Superstructure.transfer.hasBall() && !Superstructure.intake.hasBall()) {
             ticksWithoutBall ++
 
             if (ticksWithoutBall >= tickThreshold) this.cancel()
@@ -54,10 +57,10 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
     }
 
     override fun end(interrupted: Boolean) {
-        Perseverance.shooter.stop()
-        Perseverance.transfer.stop()
+        Superstructure.shooter.stop()
+        Superstructure.transfer.stop()
 
-        if (ballCount == 2) Perseverance.intake.stop()
+        if (ballCount == 2) Superstructure.intake.stop()
     }
 
 }

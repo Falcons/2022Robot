@@ -9,9 +9,13 @@ import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.livewindow.LiveWindow
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.ConditionalCommand
 import edu.wpi.first.wpilibj2.command.InstantCommand
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup
 import edu.wpi.first.wpilibj2.command.WaitCommand
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.button.POVButton
 
@@ -21,22 +25,22 @@ object Perseverance : TimedRobot(0.02) {
     val peripheralController = XboxController(1)
 
     val drive = DriveTrain()
-    val intake = Intake()
-    val climb = Climb()
-    val transfer = Transfer()
-    val shooter = Shooter()
 
     val limelight = Limelight()
     val led = LEDSystem()
 
     private val autonomousRoutine = SequentialCommandGroup(
-        InstantCommand({ intake.deployIntake() }),
-        InstantCommand({ intake.intake() }),
-        DriveForwardCommand(1.00),
-        WaitCommand(0.8),
-        InstantCommand({ intake.stop() }),
-        RotateToAngleCommand(180.0),
-        ShootAmountCommand(2)
+//        InstantCommand(intake::deploy),
+//        InstantCommand(intake::intake),
+//        DriveForwardCommand(1.00),
+//        ParallelCommandGroup(
+//            SequentialCommandGroup(
+//                WaitUntilCommand(intake::hasBall),
+//                InstantCommand(intake::stop),
+//            ),
+//            RotateToAngleCommand(180.0),
+//            ShootAmountCommand(2)
+//        )
 //        RotateToAngleCommand(-55.0),
 //        InstantCommand({
 //            intake.intake()
@@ -50,7 +54,6 @@ object Perseverance : TimedRobot(0.02) {
 //            transfer.stop()
 //        }),
 //        ShootAmountCommand(1)
-
     )
 
     override fun robotInit() {
@@ -60,10 +63,10 @@ object Perseverance : TimedRobot(0.02) {
 
         val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
 
-         // Default configuration for the camera. 60fps 320p keepOpen.
-         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
-         camera.setFPS(60)
-         camera.setResolution(320, 240)
+        // Default configuration for the camera. 60fps 320p keepOpen.
+        camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+        camera.setFPS(60)
+        camera.setResolution(320, 240)
     }
 
     override fun robotPeriodic() {
@@ -72,31 +75,33 @@ object Perseverance : TimedRobot(0.02) {
 
     private fun registerCommands() {
         // Register intake commands.
-        JoystickButton(peripheralController, XboxController.Button.kX.value)
-            .whenPressed(intake::intake, intake).whenReleased(intake::stop, intake)
-        JoystickButton(peripheralController, XboxController.Button.kB.value)
-            .whenPressed(intake::eject, intake).whenReleased(intake::stop, intake)
+//        JoystickButton(peripheralController, XboxController.Button.kX.value)
+//            .whenPressed(intake::intake, intake).whenReleased(intake::stop, intake)
+//        JoystickButton(peripheralController, XboxController.Button.kB.value)
+//            .whenPressed(intake::eject, intake).whenReleased(intake::stop, intake)
 
         // Register climb commands.
         JoystickButton(peripheralController, XboxController.Button.kY.value)
-            .whenPressed(climb::up, climb).whenReleased(climb::stop, climb)
+            .whenPressed(Superstructure.climb::up, Superstructure.climb)
+            .whenReleased(Superstructure.climb::stop, Superstructure.climb)
         JoystickButton(peripheralController, XboxController.Button.kA.value)
-            .whenPressed(climb::down, climb).whenReleased(climb::stop, climb)
+            .whenPressed(Superstructure.climb::down, Superstructure.climb)
+            .whenReleased(Superstructure.climb::stop, Superstructure.climb)
 
         // Register shooter commands.
-        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
-            .whenPressed({ shooter.shoot() }, shooter).whenReleased(shooter::stop, shooter)
-
-        // Register transfer commands.
-        POVButton(peripheralController, 270)
-            .whenPressed(transfer::up, transfer).whenReleased(transfer::stop, transfer)
-        POVButton(peripheralController, 90)
-            .whenPressed(transfer::down, transfer).whenReleased(transfer::stop, transfer)
-
-        POVButton(peripheralController, 0)
-            .whenPressed(intake::raiseIntake, intake)
-        POVButton(peripheralController, 180)
-            .whenPressed(intake::deployIntake, intake)
+//        JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
+//            .whenPressed({ shooter.shoot() }, shooter).whenReleased(shooter::stop, shooter)
+//
+//        // Register transfer commands.
+//        POVButton(peripheralController, 270)
+//            .whenPressed(transfer::up, transfer).whenReleased(transfer::stop, transfer)
+//        POVButton(peripheralController, 90)
+//            .whenPressed(transfer::down, transfer).whenReleased(transfer::stop, transfer)
+//
+//        POVButton(peripheralController, 0)
+//            .whenPressed(intake::raise, intake)
+//        POVButton(peripheralController, 180)
+//            .whenPressed(intake::deploy, intake)
 
         val command = AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape, -1)
         JoystickButton(driveController, XboxController.Button.kLeftBumper.value)

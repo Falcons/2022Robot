@@ -33,31 +33,26 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
 
     private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
 
-    // TODO: PID instead of bang bang. Start using PID way more.
-    private val controller = PIDController(0.0, 0.0, 0.0)
-    private val bangBangController = BangBangController()
     private val feedforward = SimpleMotorFeedforward(kS, kV)
 
     init {
         // Set the shooter falcon to coast to prevent the brake from fighting against BangBang.
         shooterFalcon.setNeutralMode(NeutralMode.Coast)
         shooterFalcon.inverted = true
-        tab.addString("shooter state") { state.javaClass.simpleName }
 
-        tab.addNumber("Encoder Value") { shooterFalcon.selectedSensorVelocity }
         tab.addNumber("Current RPM", ::getRPM)
         tab.addNumber("Target RPM") {
             state.let {
-                return@addNumber if (it is State.AtSpeed) {
-                    it.speed()
-                } else if (it is State.RampingUp) {
-                    it.targetSpeed()
-                } else {
-                    0.0
+                return@addNumber when(it) {
+                    is State.AtSpeed ->
+                        it.speed()
+                    is State.RampingUp ->
+                        it.targetSpeed()
+                    else ->
+                        0.0
                 }
             }
         }
-        tab.add(controller)
 
         buildConfig(RPM_THRESHOLD, TARGET_RPM, POWER)
     }
@@ -77,8 +72,6 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                         + 1.05 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
 
-                    Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
-
                     if (it.speed() != 2000.0) {
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 1.0)
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0)
@@ -86,7 +79,6 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                 }
                 is State.RampingUp -> {
                     // In Principle:
-                    Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
                     shooterFalcon.setVoltage(
                         + 1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
                     )

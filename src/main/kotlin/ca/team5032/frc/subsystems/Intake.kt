@@ -27,18 +27,13 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
 
     init {
         tab.addString("intake state") { state.javaClass.simpleName }
-        raiseIntake()
+        raise()
 
         buildConfig(DEFAULT_POWER)
     }
 
     override fun periodic() {
         state.let {
-            if (Perseverance.transfer.hasBall() && hasBall() && it is State.Intaking) {
-                intakeVictor.set(0.0)
-                return
-            }
-
             when (it) {
                 is State.Intaking -> intakeVictor.set(-DEFAULT_POWER.value)
                 is State.Ejecting -> intakeVictor.set(DEFAULT_POWER.value)
@@ -47,12 +42,12 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
         }
     }
 
-    fun intake() { changeState(State.Intaking) }
+    fun cycle() { changeState(State.Intaking) }
     fun eject() { changeState(State.Ejecting) }
     fun stop() { changeState(State.Idle) }
 
-    fun deployIntake() = intakeSolenoid.set(DoubleSolenoid.Value.kReverse)
-    fun raiseIntake() = intakeSolenoid.set(DoubleSolenoid.Value.kForward)
+    fun deploy() = intakeSolenoid.set(DoubleSolenoid.Value.kReverse)
+    fun raise() = intakeSolenoid.set(DoubleSolenoid.Value.kForward)
 
     fun hasBall() = sensor.get()
 

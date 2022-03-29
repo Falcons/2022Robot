@@ -1,34 +1,40 @@
 package ca.team5032.frc.led
 
-import ca.team5032.frc.Perseverance
-import ca.team5032.frc.subsystems.Shooter
 import ca.team5032.frc.utils.BLINKIN_ID
-import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.Tabbed
 import edu.wpi.first.wpilibj.motorcontrol.Spark
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 
 class LEDSystem : SubsystemBase(), Tabbed {
 
-    companion object {
+    private val ledController = Spark(BLINKIN_ID)
 
-        val DEFAULT_COLOUR = DoubleProperty("Default Colour", -0.93)
-
-    }
-
-    private val blinkin = Spark(BLINKIN_ID)
-
-    init {
-        buildConfig(DEFAULT_COLOUR)
-    }
+    private val queue = mutableListOf<Pair<Color, Double>>()
+    private var elapsedInstructionTime = 0.0
 
     override fun periodic() {
-        // TODO: Nice colours!
-        when (Perseverance.shooter.state) {
-            is Shooter.State.AtSpeed -> blinkin.set(.73) // green
-            is Shooter.State.RampingUp -> blinkin.set(.83) // blue
-            is Shooter.State.Idle -> blinkin.set(.61) // red
+        if (queue.isEmpty()) {
+            // Default behaviour
+            ledController.set(0.0)
+
+            return
         }
+
+        ledController.set(queue.first().first.value)
+        elapsedInstructionTime ++
+
+        if (isInstructionDone()) {
+            queue.removeFirst()
+            elapsedInstructionTime = 0.0
+        }
+    }
+
+    fun play(sequence: ColorSequence) {
+        queue.addAll(sequence)
+    }
+
+    private fun isInstructionDone(): Boolean {
+        return elapsedInstructionTime > (queue.first().second * 50)
     }
 
 }
