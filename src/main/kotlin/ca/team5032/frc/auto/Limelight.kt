@@ -1,12 +1,18 @@
 package ca.team5032.frc.auto
 
-import ca.team5032.frc.utils.Subsystem
-import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.Perseverance
+import ca.team5032.frc.utils.*
 import edu.wpi.first.math.controller.PIDController
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.PneumaticsModuleType
 import edu.wpi.first.wpilibj.drive.Vector2d
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tan
 
 class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
 
@@ -95,11 +101,19 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
             it.addDoubleProperty("Offset X", { target.offset.x }) {}
         }
 
+        controller.setTolerance(2.00)
+
         changeState(State.Targeting(Pipeline.ReflectiveTape))
         cameraMode = CameraMode.Processing
         ledMode = LEDMode.On
 
         tab.add(controller)
+        tab.add("Pose Estimation") {
+            it.addDoubleProperty("X", { getPoseOrNull()?.x ?: 0.0 }, {})
+            it.addDoubleProperty("Y", { getPoseOrNull()?.y ?: 0.0 }, {})
+            it.addDoubleProperty("Rotation", { getPoseOrNull()?.rotation?.degrees ?: 0.0 }, {})
+            it.addDoubleProperty("Distance", { getDistance() }, {})
+        }
     }
 
     override fun onStateChange(oldState: State, newState: State) {
@@ -116,6 +130,39 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
                 else if (it.pipeline == Pipeline.ReflectiveTape && solenoid.get() != DoubleSolenoid.Value.kReverse)
                     solenoid.set(DoubleSolenoid.Value.kReverse)
             }
+        }
+    }
+
+    fun getPoseOrNull(): Pose2d? {
+        if (!hasTarget() || abs(target.offset.x) > 1) return null
+
+        val distance = getDistance()
+        val angle = getRAA(Perseverance.drive.gyro.angle)
+
+        val x = distance * cos(Math.toRadians(angle))
+        val y = distance * sin(Math.toRadians(angle))
+
+        return Pose2d(
+            x,
+            y,
+            Rotation2d(Math.toRadians(Perseverance.drive.gyro.angle))
+        )
+    }
+
+    fun getDistance(): Double {
+        val ty = target.offset.y
+        return (HUB_HEIGHT - LIMELIGHT_HEIGHT) / tan(Math.toRadians(ty + LIMELIGHT_ANGLE))
+    }
+
+    private fun getRAA(angle: Double): Double {
+        return if (angle > 270) {
+            90 - (360 - angle)
+        } else if (angle > 180) {
+            90 - (angle - 180)
+        } else if (angle > 90) {
+            90 - (180 - angle)
+        } else {
+            90 - angle
         }
     }
 

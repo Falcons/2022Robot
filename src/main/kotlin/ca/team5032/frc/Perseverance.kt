@@ -3,15 +3,10 @@ package ca.team5032.frc
 import ca.team5032.frc.auto.*
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
-import edu.wpi.first.cameraserver.CameraServer
-import edu.wpi.first.cscore.VideoSource
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.livewindow.LiveWindow
-import edu.wpi.first.wpilibj2.command.CommandScheduler
-import edu.wpi.first.wpilibj2.command.InstantCommand
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup
-import edu.wpi.first.wpilibj2.command.WaitCommand
+import edu.wpi.first.wpilibj2.command.*
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.button.POVButton
 
@@ -31,12 +26,26 @@ object Perseverance : TimedRobot(0.02) {
 
     private val autonomousRoutine = SequentialCommandGroup(
         InstantCommand({ intake.deployIntake() }),
+        WaitCommand(0.3),
         InstantCommand({ intake.intake() }),
-        DriveForwardCommand(1.00),
-        WaitCommand(0.8),
+        DriveForwardCommand(1.1),
+        WaitUntilCommand { intake.hasBall() },
         InstantCommand({ intake.stop() }),
         RotateToAngleCommand(180.0),
-        ShootAmountCommand(2)
+        ShootAmountCommand(2),
+        RotateToAngleCommand(360 - 125.00),
+        InstantCommand({ intake.intake() }),
+        InstantCommand({ transfer.up() }),
+        DriveForwardCommand(2.2),
+        WaitUntilCommand { transfer.hasBall() },
+        InstantCommand({
+            intake.stop()
+            transfer.stop()
+        }),
+        RotateToAngleCommand(165.00),
+        DriveForwardCommand(2.00),
+        ShootAmountCommand(1)
+
 //        RotateToAngleCommand(-55.0),
 //        InstantCommand({
 //            intake.intake()
@@ -58,12 +67,12 @@ object Perseverance : TimedRobot(0.02) {
         //DriverStation.silenceJoystickConnectionWarning(true)
         registerCommands()
 
-        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
-
-         // Default configuration for the camera. 60fps 320p keepOpen.
-         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
-         camera.setFPS(60)
-         camera.setResolution(320, 240)
+//        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
+//
+//         // Default configuration for the camera. 60fps 320p keepOpen.
+//         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+//         camera.setFPS(60)
+//         camera.setResolution(320, 240)
     }
 
     override fun robotPeriodic() {

@@ -3,8 +3,8 @@ package ca.team5032.frc.subsystems
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.auto.Limelight
 import ca.team5032.frc.utils.*
+import ca.team5032.frc.utils.motor.Falcon500
 import com.ctre.phoenix.motorcontrol.NeutralMode
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.math.controller.BangBangController
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
@@ -31,7 +31,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         object Idle : State()
     }
 
-    private val shooterFalcon = WPI_TalonFX(SHOOTER_ID)
+    private val shooterFalcon = Falcon500(SHOOTER_ID)
 
     // TODO: PID instead of bang bang. Start using PID way more.
     private val controller = PIDController(0.0, 0.0, 0.0)
@@ -42,9 +42,8 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         // Set the shooter falcon to coast to prevent the brake from fighting against BangBang.
         shooterFalcon.setNeutralMode(NeutralMode.Coast)
         shooterFalcon.inverted = true
-        tab.addString("shooter state") { state.javaClass.simpleName }
 
-        tab.addNumber("Encoder Value") { shooterFalcon.selectedSensorVelocity }
+        tab.addNumber("Encoder Value") { shooterFalcon.velocity(TalonTicks, Rotations / Minutes) }
         tab.addNumber("Current RPM", ::getRPM)
         tab.addNumber("Target RPM") {
             state.let {
@@ -121,9 +120,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         return 2000.0
     }
 
-    // units per 100 millisecond -> rotations per minute.
-    // 2048 units = 1 rotation.
-    private fun getRPM() = shooterFalcon.selectedSensorVelocity apply (TalonTicks / (100 * Millis) to Rotations / Minutes)
+    private fun getRPM() = shooterFalcon.velocity(TalonTicks, Rotations / Minutes)
 
     private fun withinThreshold(a: Double, b: Double, threshold: Double): Boolean {
         return abs(a - b) < threshold

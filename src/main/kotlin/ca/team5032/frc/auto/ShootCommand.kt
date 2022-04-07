@@ -1,19 +1,18 @@
 package ca.team5032.frc.auto
 
 import ca.team5032.frc.Perseverance
-import ca.team5032.frc.subsystems.Shooter
 import edu.wpi.first.wpilibj2.command.CommandBase
 
 class ShootCommand(private val ballCount: Int) : CommandBase() {
 
-    var reachedSpeed = false
+    var hadBall = false
     var totalShot = 0
 
     var ticksWithoutBall = 0
-    var tickThreshold = 0.5 / Perseverance.period
+    var tickThreshold = 0.3 / Perseverance.period
 
     override fun initialize() {
-        reachedSpeed = false
+        hadBall = false
         totalShot = 0
         ticksWithoutBall = 0
 
@@ -34,11 +33,11 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
     }
 
     override fun execute() {
-        if (Perseverance.shooter.state is Shooter.State.AtSpeed) {
-            reachedSpeed = true
-        } else if (Perseverance.shooter.state is Shooter.State.RampingUp && reachedSpeed) { // Speed drops due to ball passing it
+        if (Perseverance.transfer.hasBall()) {
+            hadBall = true
+        } else if (!Perseverance.transfer.hasBall() && hadBall) { // Speed drops due to ball passing it
             totalShot ++
-            reachedSpeed = false
+            hadBall = false
 
             if (totalShot == ballCount) this.cancel()
         }
@@ -58,6 +57,10 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
         Perseverance.transfer.stop()
 
         if (ballCount == 2) Perseverance.intake.stop()
+    }
+
+    override fun isFinished(): Boolean {
+        return ticksWithoutBall >= tickThreshold || totalShot == ballCount
     }
 
 }

@@ -4,8 +4,8 @@ import ca.team5032.frc.utils.CLIMB_ID
 import ca.team5032.frc.utils.DoubleProperty
 import ca.team5032.frc.utils.Subsystem
 import ca.team5032.frc.utils.Tabbed
+import ca.team5032.frc.utils.motor.Falcon500
 import com.ctre.phoenix.motorcontrol.NeutralMode
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
 import edu.wpi.first.wpilibj.DigitalInput
 
 
@@ -22,7 +22,7 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
         object Idle : State()
     }
 
-    private val climbFalcon = WPI_TalonFX(CLIMB_ID)
+    private val climbFalcon = Falcon500(CLIMB_ID)
 
     // Limit switches.
     private val bottomSensor = DigitalInput(0)

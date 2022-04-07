@@ -23,3 +23,12 @@ const val INTAKE_ID = 7
 const val INTAKE_SENSOR_ID = 2
 const val INTAKE_SOLENOID_1_ID = 2
 const val INTAKE_SOLENOID_2_ID = 3
+
+const val MINIMUM_ROTATION_SPEED = 0.26
+const val MAXIMUM_ROTATION_SPEED = 0.7
+
+val ANGULAR_CONVERSION = 0.47877872 * (Metres / Rotations)
+
+const val HUB_HEIGHT = 2.64
+const val LIMELIGHT_HEIGHT = 0.825
+const val LIMELIGHT_ANGLE = 18.7
