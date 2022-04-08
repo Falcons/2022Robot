@@ -28,36 +28,39 @@ object Perseverance : TimedRobot(0.02) {
         InstantCommand({ intake.deployIntake() }),
         WaitCommand(0.3),
         InstantCommand({ intake.intake() }),
-        DriveForwardCommand(1.1),
+        DriveForwardCommand(.70),
         WaitUntilCommand { intake.hasBall() },
         InstantCommand({ intake.stop() }),
         RotateToAngleCommand(180.0),
+        InstantCommand({ println("Done rotating!") }),
         ShootAmountCommand(2),
-        RotateToAngleCommand(360 - 125.00),
-        InstantCommand({ intake.intake() }),
-        InstantCommand({ transfer.up() }),
-        DriveForwardCommand(2.2),
+        RotateToAngleCommand(-77.0),
+        InstantCommand({
+            intake.intake()
+            transfer.up()
+        }),
+        DriveForwardCommand(2.8),
         WaitUntilCommand { transfer.hasBall() },
         InstantCommand({
             intake.stop()
             transfer.stop()
         }),
-        RotateToAngleCommand(165.00),
-        DriveForwardCommand(2.00),
-        ShootAmountCommand(1)
-
-//        RotateToAngleCommand(-55.0),
+        RotateToAngleCommand(105.0),
+        ShootAmountCommand(1),
+        RotateToAngleCommand(180.0)
+//        RotateToAngleCommand(360 - 125.00),
 //        InstantCommand({
 //            intake.intake()
 //            transfer.up()
 //        }),
-//        DriveForwardCommand(1.75),
-//        RotateToAngleCommand(95.0),
-//        WaitCommand(0.4),
+//        DriveForwardCommand(2.2),
+//        WaitUntilCommand { transfer.hasBall() },
 //        InstantCommand({
 //            intake.stop()
 //            transfer.stop()
 //        }),
+//        RotateToAngleCommand(165.00),
+//        DriveForwardCommand(2.00),
 //        ShootAmountCommand(1)
 
     )
@@ -73,6 +76,10 @@ object Perseverance : TimedRobot(0.02) {
 //         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
 //         camera.setFPS(60)
 //         camera.setResolution(320, 240)
+    }
+
+    override fun teleopInit() {
+        drive.gyro.yaw = 0.0
     }
 
     override fun robotPeriodic() {

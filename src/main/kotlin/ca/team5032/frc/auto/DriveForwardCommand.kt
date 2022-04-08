@@ -28,8 +28,6 @@ class DriveForwardCommand(private val distance: Double) : CommandBase() {
 
     override fun execute() {
         //ticksSinceStart ++
-        println("ED: ${linearOdometry.getElapsedDistance()}")
-        println("RL Pos: ${Perseverance.drive.rearLeft.position()}")
 
         if (linearOdometry.getElapsedDistance() <= distance) {
             Perseverance.drive.autonomousInput.ySpeed = 0.6

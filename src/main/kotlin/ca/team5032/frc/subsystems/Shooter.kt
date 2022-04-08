@@ -20,8 +20,8 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         val POWER = DoubleProperty("Target Speed", 0.35)
 
         // TODO: Figure out why these aren't accurate? and/or FF doesn't work how I thought.
-        const val kS: Double = 0.069646
-        const val kV: Double = 0.11522
+        const val kS: Double = 0.20985
+        const val kV: Double = 0.11193
         const val kA: Double = 0.0
     }
 
@@ -73,6 +73,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
             when (it) {
                 is State.AtSpeed -> {
                     shooterFalcon.setVoltage(
+                        (it.speed() - getRPM()) / 700 +
                         + 1.05 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
 
@@ -87,6 +88,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                     // In Principle:
                     Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
                     shooterFalcon.setVoltage(
+                        (it.targetSpeed() - getRPM()) / 1000 +
                         + 1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
                 }

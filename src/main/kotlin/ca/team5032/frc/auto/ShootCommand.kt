@@ -19,15 +19,10 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
         Perseverance.shooter.shoot()
 
         // 1. Transfer has a ball
-        if (Perseverance.transfer.hasBall() && ballCount >= 1) {
+        if (Perseverance.transfer.hasBall()) {
             Perseverance.transfer.up()
         }
-        if (!Perseverance.transfer.hasBall() && Perseverance.intake.hasBall() && ballCount >= 1) {
-            Perseverance.transfer.up()
-            Perseverance.intake.intake()
-        }
-        // 2. Intake has a ball
-        if (Perseverance.intake.hasBall() && ballCount == 2) {
+        if (Perseverance.intake.hasBall()) {
             Perseverance.intake.intake()
         }
     }

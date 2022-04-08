@@ -8,19 +8,22 @@ import edu.wpi.first.wpilibj2.command.CommandBase
 import kotlin.math.abs
 import kotlin.math.sign
 
-class RotateToAngleCommand(private val angle: Double) : CommandBase() {
+class RotateToAngleCommand(private val desiredAngle: Double) : CommandBase() {
+
+    var targetAngle = 0.0
 
     override fun initialize() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)
-        Perseverance.drive.gyro.reset()
+        targetAngle = abs((Perseverance.drive.getHeading() + desiredAngle) % 360)
+        if (targetAngle < 0) {
+            targetAngle += 360
+        }
     }
 
     override fun execute() {
-        val currentAngle = Perseverance.drive.gyro.angle
+        val currentAngle = getDiffAngle()
 
-        val desiredAngle = angle
-
-        val output = Perseverance.drive.rotationController.calculate(currentAngle, desiredAngle)
+        val output = Perseverance.drive.rotationController.calculate(currentAngle, 0.0)
         val absolute = abs(output)
         val sign = sign(output)
 
@@ -32,12 +35,19 @@ class RotateToAngleCommand(private val angle: Double) : CommandBase() {
     }
 
     override fun isFinished(): Boolean {
-        return abs(Perseverance.drive.gyro.angle - angle) < 10
+        return abs(getDiffAngle()) < 3
     }
 
     override fun end(interrupted: Boolean) {
         Perseverance.drive.autonomousInput.zRotation = 0.0
         Perseverance.drive.changeState(DriveTrain.State.Idle)
+    }
+
+    private fun getDiffAngle(): Double {
+        val phi = abs(Perseverance.drive.getHeading() - targetAngle) % 360
+        val distance = if (phi > 180) 360 - phi else phi
+
+        return distance
     }
 
 }

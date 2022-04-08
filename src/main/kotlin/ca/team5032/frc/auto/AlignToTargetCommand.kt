@@ -11,10 +11,10 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, priva
 
     private var ticksAtSetpoint = 0
 
-    // Must be at the setpoint for 0.1 seconds.
-    private var tickThreshold = 0.1 / Perseverance.period
+    // Must be at the setpoint for 0.2 seconds.
+    private var tickThreshold = 0.2 / Perseverance.period
 
-    private val minimumRotationSpeed = 0.26
+    private val minimumRotationSpeed = 0.27
 
     override fun initialize() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)

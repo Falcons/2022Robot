@@ -4,6 +4,7 @@ import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
 import ca.team5032.frc.utils.motor.Falcon500
 import ca.team5032.frc.utils.motor.MotorProfile
+import com.ctre.phoenix.sensors.PigeonIMU
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
@@ -11,7 +12,6 @@ import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds
-import edu.wpi.first.wpilibj.ADIS16448_IMU
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import kotlin.math.PI
@@ -54,7 +54,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     private val field = Field2d()
 
-    val gyro = ADIS16448_IMU()
+    val gyro = PigeonIMU(0)
     private val controller: XboxController = Perseverance.driveController
 
     private val odometry: MecanumDriveOdometry
@@ -75,11 +75,14 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
         MotorProfile.DriveConfig.apply(frontLeft, rearLeft, frontRight, rearRight)
 
-        tab.add("ADIS Gyro", gyro)
+        //gyro.enterCalibrationMode(PigeonIMU.CalibrationMode.)
+        //tab.add("ADIS Gyro", gyro)
         tab.add("Field2d", field)
         //tab.add(rotationController)
+        rotationController.enableContinuousInput(0.0, 360.0)
+        //()
 
-        gyro.calibrate()
+        gyro.yaw = 0.0
 
         val kinematics = MecanumDriveKinematics(
             Translation2d(0.31, 0.28),
@@ -97,6 +100,8 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             it.addDoubleProperty("Right Front", { frontRight.sensorCollection.integratedSensorPosition }, {})
             it.addDoubleProperty("Right Rear", { rearRight.sensorCollection.integratedSensorPosition }, {})
         }
+
+        tab.addNumber("Heading", ::getHeading)
 
         buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
@@ -145,16 +150,27 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             frontRight.velocity(),
             rearRight.velocity()
         )
-        val gyroRadians = Rotation2d.fromDegrees(-gyro.angle)
+        val gyroRadians = Rotation2d.fromDegrees(getHeading())
 
         pose = odometry.update(gyroRadians, wheelSpeeds)
 
         Perseverance.limelight.getPoseOrNull()?.let {
-            odometry.resetPosition(it, Rotation2d(0.0))
+            odometry.resetPosition(it, Rotation2d(getHeading()))
             pose = it
         }
 
         field.robotPose = odometry.poseMeters
+    }
+
+    fun getHeading(continuous: Boolean = false): Double {
+        if (continuous) return -gyro.yaw
+
+        val yaw = gyro.yaw
+
+        if (yaw < 0) {
+            return abs(gyro.yaw) % 360
+        }
+        return 360 - yaw % 360
     }
 
 }

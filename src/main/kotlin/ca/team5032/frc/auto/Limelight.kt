@@ -137,21 +137,35 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
         if (!hasTarget() || abs(target.offset.x) > 1) return null
 
         val distance = getDistance()
-        val angle = getRAA(Perseverance.drive.gyro.angle)
+        val angle = getRAA(Perseverance.drive.getHeading())
 
-        val x = distance * cos(Math.toRadians(angle))
-        val y = distance * sin(Math.toRadians(angle))
+        val x = distance * cos(angle)
+        val y = distance * sin(angle)
+
+        val (xSign, ySign) = getSigns(Perseverance.drive.getHeading())
 
         return Pose2d(
-            x,
-            y,
-            Rotation2d(Math.toRadians(Perseverance.drive.gyro.angle))
+            x + FIELD_WIDTH / 2 * xSign,
+            y + FIELD_LENGTH / 2 * ySign,
+            Rotation2d(Math.toRadians(Perseverance.drive.getHeading()))
         )
     }
 
     fun getDistance(): Double {
         val ty = target.offset.y
-        return (HUB_HEIGHT - LIMELIGHT_HEIGHT) / tan(Math.toRadians(ty + LIMELIGHT_ANGLE))
+        return (HUB_HEIGHT - LIMELIGHT_HEIGHT) / tan(Math.toRadians(ty + LIMELIGHT_ANGLE)) + HUB_RADIUS
+    }
+
+    fun getSigns(angle: Double): Pair<Int, Int> {
+        return if (angle <= 90) {
+            -1 to -1
+        } else if (angle <= 180) {
+            -1 to 1
+        } else if (angle <= 270) {
+            1 to 1
+        } else {
+            1 to -1
+        }
     }
 
     private fun getRAA(angle: Double): Double {
