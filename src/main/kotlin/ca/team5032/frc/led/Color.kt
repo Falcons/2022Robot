@@ -1,7 +1,5 @@
 package ca.team5032.frc.led
 
-import edu.wpi.first.wpilibj.motorcontrol.Spark
-
 sealed class Color(val value: Double) {
 
     object HotPink      : Color(0.57)

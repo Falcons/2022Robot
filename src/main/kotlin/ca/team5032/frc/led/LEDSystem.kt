@@ -10,12 +10,14 @@ class LEDSystem : SubsystemBase(), Tabbed {
     private val ledController = Spark(BLINKIN_ID)
 
     private val queue = mutableListOf<Pair<Color, Double>>()
-    private var elapsedInstructionTime = 0.0
+    private var elapsedInstructionTime = 0
+
+    private var looping = false
 
     override fun periodic() {
         if (queue.isEmpty()) {
             // Default behaviour
-            ledController.set(0.0)
+            ledController.set(Color.Gold.value)
 
             return
         }
@@ -24,13 +26,26 @@ class LEDSystem : SubsystemBase(), Tabbed {
         elapsedInstructionTime ++
 
         if (isInstructionDone()) {
-            queue.removeFirst()
-            elapsedInstructionTime = 0.0
+            if (looping) {
+                queue.add(queue.removeFirst())
+            } else {
+                queue.removeFirst()
+            }
+
+            elapsedInstructionTime = 0
         }
     }
 
     fun play(sequence: ColorSequence) {
         queue.addAll(sequence)
+    }
+
+    fun loop() {
+        looping = !looping
+    }
+
+    fun stop() {
+        queue.clear()
     }
 
     private fun isInstructionDone(): Boolean {

@@ -1,9 +1,6 @@
 package ca.team5032.frc.utils
 
-import ca.team5032.frc.subsystems.DriveTrain
-import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
+import ca.team5032.frc.utils.motor.Falcon500
 import kotlin.math.abs
 
 fun driveCartesianIK(ySpeed: Double, xSpeed: Double, zRotation: Double): List<Double> {
@@ -23,15 +20,12 @@ fun driveCartesianIK(ySpeed: Double, xSpeed: Double, zRotation: Double): List<Do
  * Until [edu.wpi.first.math.kinematics.MecanumDriveOdometry] is proven reliable, this simple class can be used
  * for Y axis odometry
  */
-class MecanumLinearOdometry(vararg falcons: WPI_TalonFX, private val unit: Distance) {
+class MecanumLinearOdometry(vararg falcons: Falcon500, private val unit: Distance) {
 
     private val falcons = listOf(*falcons)
     private var startingPosition = 0.0
-    private val tab = Shuffleboard.getTab("Linear Odometry")
 
     fun zero() {
-        falcons.forEach { it.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor) }
-
         // Look into this: - for now, seems more reliable to just get a starting position.
         //falcons.forEach { it.sensorCollection.setIntegratedSensorPosition(0.0, 0) }
         startingPosition = getCurrentAbsolutePosition()
@@ -42,10 +36,7 @@ class MecanumLinearOdometry(vararg falcons: WPI_TalonFX, private val unit: Dista
     }
 
     private fun getCurrentAbsolutePosition(): Double {
-        return (falcons.sumOf { it.selectedSensorPosition } / falcons.size)
-            .apply(TalonTicks to Rotations)
-            .apply(DriveTrain.ANGULAR_CONVERSION)
-            .apply(Metres to unit)
+        return falcons.sumOf { it.position(unit) } / falcons.size
     }
 
 }
