@@ -14,8 +14,6 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle()), Tabbed {
 
     companion object {
         val RPM_THRESHOLD = DoubleProperty("RPM Threshold", 100.0)
-        val TARGET_RPM = DoubleProperty("Target RPM", 3000.0)
-        val POWER = DoubleProperty("Target Speed", 0.35)
 
         const val kS: Double = 0.20985
         const val kV: Double = 0.11193
@@ -43,12 +41,11 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle()), Tabbed {
             }
         }
 
-        buildConfig(RPM_THRESHOLD, TARGET_RPM, POWER)
+        buildConfig(RPM_THRESHOLD)
     }
 
     override fun periodic() {
         state.let {
-            // Simple state machine.
             if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value) && it.targetSpeed() != 2300.0) {
                 changeState(State.AtSpeed(it.targetSpeed))
             } else if (it is State.AtSpeed && !withinThreshold(getRPM(), it.speed(), RPM_THRESHOLD.value)) {

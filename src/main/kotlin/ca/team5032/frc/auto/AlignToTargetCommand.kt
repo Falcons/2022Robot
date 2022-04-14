@@ -3,13 +3,14 @@ package ca.team5032.frc.auto
 import ca.team5032.frc.Perseverance
 import ca.team5032.frc.Perseverance.limelight
 import ca.team5032.frc.subsystems.DriveTrain
+import ca.team5032.frc.utils.MINIMUM_ROTATION_SPEED
 import edu.wpi.first.wpilibj2.command.CommandBase
 import kotlin.math.abs
 import kotlin.math.sign
 
 class AlignToTargetCommand(
     private val targetPipeline: Limelight.Pipeline,
-    private val mult: Int,
+    private val direction: Int,
     private val seek: Boolean = true
 ) : CommandBase() {
 
@@ -18,9 +19,7 @@ class AlignToTargetCommand(
     // Must be at the setpoint for 0.2 seconds.
     private var tickThreshold = 0.2 / Perseverance.period
 
-    private val minimumRotationSpeed = 0.27
-
-    private val setpoint = if (targetPipeline == Limelight.Pipeline.ReflectiveTape) 0.0 else 2.0
+    private val setpoint = if (targetPipeline == Limelight.Pipeline.ReflectiveTape) 0.0 else -2.0
 
     override fun initialize() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)
@@ -38,11 +37,11 @@ class AlignToTargetCommand(
             // Turn towards target.
             val distance = limelight.target.offset.x
 
-            val output = limelight.controller.calculate(distance, 0.0)
+            val output = limelight.controller.calculate(distance, setpoint)
             val absolute = abs(output)
             val sign = -sign(output)
 
-            val remapped = absolute * (1 - minimumRotationSpeed) + minimumRotationSpeed
+            val remapped = absolute * (1 - MINIMUM_ROTATION_SPEED) + MINIMUM_ROTATION_SPEED
 
             Perseverance.drive.autonomousInput.zRotation = sign * remapped
 
@@ -54,7 +53,7 @@ class AlignToTargetCommand(
             }
         } else if (seek) {
             // Turn until hasTarget.
-            Perseverance.drive.autonomousInput.zRotation = 0.5 * mult
+            Perseverance.drive.autonomousInput.zRotation = 0.5 * direction
 
             ticksAtSetpoint = 0
         }

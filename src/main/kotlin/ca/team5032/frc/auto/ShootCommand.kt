@@ -9,7 +9,7 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
     var totalShot = 0
 
     var ticksWithoutBall = 0
-    var tickThreshold = 0.3 / Perseverance.period
+    var tickThreshold = 0.2 / Perseverance.period
 
     override fun initialize() {
         hadBall = false
@@ -19,12 +19,8 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
         Perseverance.shooter.shoot()
         Perseverance.transfer.up()
 
-        // 1. Transfer has a ball
-//        if (Perseverance.transfer.hasBall()) {
-//            Perseverance.transfer.up()
-//        }
         if (Perseverance.intake.hasBall()) {
-            Perseverance.intake.intake()
+            Perseverance.intake.cycle()
         }
     }
 

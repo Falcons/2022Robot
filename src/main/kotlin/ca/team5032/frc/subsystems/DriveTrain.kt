@@ -32,13 +32,10 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         // Sensitivity for xSpeed cartesian movement. (south-west)
         val X_SENSITIVITY = DoubleProperty("X Sensitivity", 1.0)
 
-        // Constant rotation speed for the robot.
+        // Rotation multiplier.
         val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
-        val FAST_ROTATION = DoubleProperty("Rotation Speed", 0.65)
         // Magnitude of micro movements done by the dpad.
         val MICRO_SPEED = DoubleProperty("Micro Speed", 0.5)
-
-        val MAXIMUM_VELOCITY = DoubleProperty("Maximum Velocity", 1.0)
     }
 
     data class DriveInput(var ySpeed: Double, var xSpeed: Double, var zRotation: Double)

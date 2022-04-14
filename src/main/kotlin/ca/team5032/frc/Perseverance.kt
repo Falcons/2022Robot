@@ -1,15 +1,20 @@
 package ca.team5032.frc
 
-import ca.team5032.frc.auto.AlignToTargetCommand
-import ca.team5032.frc.auto.Limelight
+import ca.team5032.frc.auto.*
+import ca.team5032.frc.auto.routines.FiveBallAutoCommand
+import ca.team5032.frc.auto.routines.OneBallAutoCommand
+import ca.team5032.frc.auto.routines.ThreeBallAutoCommand
+import ca.team5032.frc.auto.routines.TwoBallAutoCommand
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
-import edu.wpi.first.cameraserver.CameraServer
-import edu.wpi.first.cscore.VideoSource
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.livewindow.LiveWindow
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.InstantCommand
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.button.POVButton
 
@@ -27,19 +32,28 @@ object Perseverance : TimedRobot(0.02) {
     val limelight = Limelight()
     val led = LEDSystem()
 
-    //private val autonomousRoutine =
+    private lateinit var autoCommand: Command
+    private val autoChooser = SendableChooser<Command>()
 
     override fun robotInit() {
         LiveWindow.disableAllTelemetry()
-        //DriverStation.silenceJoystickConnectionWarning(true)
         registerCommands()
 
-        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
+        autoChooser.setDefaultOption("3 Ball + 2 Pickup (slow 5?)", FiveBallAutoCommand())
+        autoChooser.addOption("3 Ball", ThreeBallAutoCommand())
+        autoChooser.addOption("2 Ball", TwoBallAutoCommand())
+        autoChooser.addOption("1 Ball", OneBallAutoCommand())
+        autoChooser.addOption("Taxi", DriveDistanceCommand(1.00))
+        autoChooser.addOption("Do Nothing", InstantCommand())
 
-         // Default configuration for the camera. 60fps 320p keepOpen.
-         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
-         camera.setFPS(60)
-         camera.setResolution(320, 240)
+        SmartDashboard.putData(autoChooser)
+
+//        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
+//
+//         // Default configuration for the camera. 60fps 320p keepOpen.
+//         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+//         camera.setFPS(60)
+//         camera.setResolution(320, 240)
     }
 
     override fun robotPeriodic() {
@@ -49,7 +63,7 @@ object Perseverance : TimedRobot(0.02) {
     private fun registerCommands() {
         // Register intake commands.
         JoystickButton(peripheralController, XboxController.Button.kX.value)
-            .whenPressed(intake::intake, intake).whenReleased(intake::stop, intake)
+            .whenPressed(intake::cycle, intake).whenReleased(intake::stop, intake)
         JoystickButton(peripheralController, XboxController.Button.kB.value)
             .whenPressed(intake::eject, intake).whenReleased(intake::stop, intake)
 
@@ -73,9 +87,9 @@ object Perseverance : TimedRobot(0.02) {
             .whenPressed(transfer::down, transfer).whenReleased(transfer::stop, transfer)
 
         POVButton(peripheralController, 0)
-            .whenPressed(intake::raiseIntake, intake)
+            .whenPressed(intake::raise, intake)
         POVButton(peripheralController, 180)
-            .whenPressed(intake::deployIntake, intake)
+            .whenPressed(intake::deploy, intake)
 
         val command = AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape, -1)
         JoystickButton(driveController, XboxController.Button.kLeftBumper.value)
@@ -89,6 +103,7 @@ object Perseverance : TimedRobot(0.02) {
     }
 
     override fun autonomousInit() {
+        autoCommand = autoChooser.selected
         //autonomousRoutine.schedule()
         drive.gyro.yaw = 0.0
     }

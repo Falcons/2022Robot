@@ -27,8 +27,6 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
     private val bottomSensor = DigitalInput(0)
     private val topSensor = DigitalInput(1)
 
-    private val pivotSensor = DigitalInput(4)
-
     init {
         climbFalcon.setNeutralMode(NeutralMode.Brake)
         climbFalcon.ticks = TalonTicks
