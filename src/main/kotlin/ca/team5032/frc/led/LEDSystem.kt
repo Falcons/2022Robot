@@ -17,7 +17,7 @@ class LEDSystem : SubsystemBase(), Tabbed {
     override fun periodic() {
         if (queue.isEmpty()) {
             // Default behaviour
-            ledController.set(0.0)
+            ledController.set(Color.Gold.value)
 
             return
         }

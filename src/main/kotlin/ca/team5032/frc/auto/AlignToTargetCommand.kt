@@ -7,7 +7,11 @@ import edu.wpi.first.wpilibj2.command.CommandBase
 import kotlin.math.abs
 import kotlin.math.sign
 
-class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, private val mult: Int) : CommandBase() {
+class AlignToTargetCommand(
+    private val targetPipeline: Limelight.Pipeline,
+    private val mult: Int,
+    private val seek: Boolean = true
+) : CommandBase() {
 
     private var ticksAtSetpoint = 0
 
@@ -15,6 +19,8 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, priva
     private var tickThreshold = 0.2 / Perseverance.period
 
     private val minimumRotationSpeed = 0.27
+
+    private val setpoint = if (targetPipeline == Limelight.Pipeline.ReflectiveTape) 0.0 else 2.0
 
     override fun initialize() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)
@@ -46,7 +52,7 @@ class AlignToTargetCommand(private val targetPipeline: Limelight.Pipeline, priva
             } else {
                 ticksAtSetpoint = 0
             }
-        } else {
+        } else if (seek) {
             // Turn until hasTarget.
             Perseverance.drive.autonomousInput.zRotation = 0.5 * mult
 

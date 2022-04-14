@@ -3,6 +3,8 @@ package ca.team5032.frc
 import ca.team5032.frc.auto.*
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
+import edu.wpi.first.cameraserver.CameraServer
+import edu.wpi.first.cscore.VideoSource
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.livewindow.LiveWindow
@@ -28,41 +30,69 @@ object Perseverance : TimedRobot(0.02) {
         InstantCommand({ intake.deployIntake() }),
         WaitCommand(0.3),
         InstantCommand({ intake.intake() }),
-        DriveForwardCommand(.70),
+        DriveForwardCommand(.65),
         WaitUntilCommand { intake.hasBall() },
         InstantCommand({ intake.stop() }),
         RotateToAngleCommand(180.0),
-        InstantCommand({ println("Done rotating!") }),
         ShootAmountCommand(2),
+        InstantCommand({
+            limelight.changeState(Limelight.State.Targeting(
+                Limelight.Pipeline.getBall()
+            ))
+        }),
         RotateToAngleCommand(-77.0),
+        AlignToTargetCommand(
+            Limelight.Pipeline.getBall(),
+            1,
+            false
+        ),
+        InstantCommand({
+            limelight.changeState(Limelight.State.Targeting(
+                Limelight.Pipeline.ReflectiveTape
+            ))
+        }),
         InstantCommand({
             intake.intake()
             transfer.up()
         }),
-        DriveForwardCommand(2.8),
+        DriveForwardCommand(3.0),
         WaitUntilCommand { transfer.hasBall() },
         InstantCommand({
             intake.stop()
             transfer.stop()
         }),
-        RotateToAngleCommand(105.0),
+        RotateToAngleCommand(120.0),
         ShootAmountCommand(1),
-        RotateToAngleCommand(180.0)
-//        RotateToAngleCommand(360 - 125.00),
-//        InstantCommand({
-//            intake.intake()
-//            transfer.up()
-//        }),
-//        DriveForwardCommand(2.2),
-//        WaitUntilCommand { transfer.hasBall() },
-//        InstantCommand({
-//            intake.stop()
-//            transfer.stop()
-//        }),
-//        RotateToAngleCommand(165.00),
-//        DriveForwardCommand(2.00),
-//        ShootAmountCommand(1)
-
+        InstantCommand({
+            limelight.changeState(Limelight.State.Targeting(
+                Limelight.Pipeline.getBall()
+            ))
+        }),
+        RotateToAngleCommand(180.0),
+        AlignToTargetCommand(
+            Limelight.Pipeline.getBall(),
+            1,
+            false
+        ),
+        InstantCommand({
+            limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
+        }),
+        InstantCommand({
+            intake.intake()
+            transfer.up()
+        }),
+        DriveForwardCommand(2.07),
+        WaitUntilCommand {
+            transfer.hasBall() && intake.hasBall()
+        },
+        InstantCommand({
+            intake.stop()
+            transfer.stop()
+        }),
+        RotateToAngleCommand(180.0),
+        DriveForwardCommand(1.70, 1.0),
+        AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape, -1),
+        ShootCommand(2)
     )
 
     override fun robotInit() {
@@ -70,16 +100,12 @@ object Perseverance : TimedRobot(0.02) {
         //DriverStation.silenceJoystickConnectionWarning(true)
         registerCommands()
 
-//        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
-//
-//         // Default configuration for the camera. 60fps 320p keepOpen.
-//         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
-//         camera.setFPS(60)
-//         camera.setResolution(320, 240)
-    }
+        val camera = CameraServer.startAutomaticCapture("Driver cam", 0);
 
-    override fun teleopInit() {
-        drive.gyro.yaw = 0.0
+         // Default configuration for the camera. 60fps 320p keepOpen.
+         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+         camera.setFPS(60)
+         camera.setResolution(320, 240)
     }
 
     override fun robotPeriodic() {
@@ -95,9 +121,12 @@ object Perseverance : TimedRobot(0.02) {
 
         // Register climb commands.
         JoystickButton(peripheralController, XboxController.Button.kY.value)
-            .whenPressed(climb::up, climb).whenReleased(climb::stop, climb)
+            .whenActive(climb::up, climb)
+            .whenInactive(climb::stop, climb)
+
         JoystickButton(peripheralController, XboxController.Button.kA.value)
-            .whenPressed(climb::down, climb).whenReleased(climb::stop, climb)
+            .whenActive(climb::down, climb)
+            .whenInactive(climb::stop, climb)
 
         // Register shooter commands.
         JoystickButton(peripheralController, XboxController.Button.kRightBumper.value)
@@ -127,6 +156,7 @@ object Perseverance : TimedRobot(0.02) {
 
     override fun autonomousInit() {
         autonomousRoutine.schedule()
+        drive.gyro.yaw = 0.0
     }
 
     override fun autonomousExit() {

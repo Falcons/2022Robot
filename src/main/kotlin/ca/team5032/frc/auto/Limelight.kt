@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.DoubleSolenoid
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.PneumaticsModuleType
 import edu.wpi.first.wpilibj.drive.Vector2d
 import kotlin.math.abs
@@ -32,6 +33,12 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
 
         companion object {
             fun from(value: Int) = values().firstOrNull { it.value == value } ?: ReflectiveTape
+
+            fun getBall() = if (DriverStation.getAlliance() == DriverStation.Alliance.Red)
+                    RedBall
+                else
+                    BlueBall
+
         }
     }
 
@@ -47,7 +54,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
     }
 
     sealed class State {
-        data class Targeting(val pipeline: Pipeline) : State()
+        data class Targeting(val pipeline: Limelight.Pipeline) : State()
         object Idle : State()
     }
 
@@ -119,6 +126,11 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
     override fun onStateChange(oldState: State, newState: State) {
         if (newState is State.Targeting) {
             pipeline = newState.pipeline
+
+            if (newState.pipeline != Pipeline.ReflectiveTape)
+                solenoid.set(DoubleSolenoid.Value.kForward)
+            else
+                solenoid.set(DoubleSolenoid.Value.kReverse)
         }
     }
 

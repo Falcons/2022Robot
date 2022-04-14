@@ -10,7 +10,8 @@ const val FRONT_RIGHT_ID = 2
 const val REAR_RIGHT_ID = 3
 
 // ID of the climb Falcon.
-const val CLIMB_ID = 4
+const val CLIMB_MAIN_ID = 4
+const val CLIMB_PIVOT_ID = 8
 
 // ID of the shooter Falcon.
 const val SHOOTER_ID = 5
@@ -24,10 +25,12 @@ const val INTAKE_SENSOR_ID = 2
 const val INTAKE_SOLENOID_1_ID = 2
 const val INTAKE_SOLENOID_2_ID = 3
 
+const val AUTO_DRIVE_SPEED = 0.6
+
 const val MINIMUM_ROTATION_SPEED = 0.27
 const val MAXIMUM_ROTATION_SPEED = 0.7
 
-val ANGULAR_CONVERSION = 0.47877872 * (Metres / Rotations)
+const val DRIVE_ANGULAR_CONVERSION = 0.47877872
 
 const val HUB_HEIGHT = 2.64
 const val LIMELIGHT_HEIGHT = 0.825

@@ -17,11 +17,12 @@ class ShootCommand(private val ballCount: Int) : CommandBase() {
         ticksWithoutBall = 0
 
         Perseverance.shooter.shoot()
+        Perseverance.transfer.up()
 
         // 1. Transfer has a ball
-        if (Perseverance.transfer.hasBall()) {
-            Perseverance.transfer.up()
-        }
+//        if (Perseverance.transfer.hasBall()) {
+//            Perseverance.transfer.up()
+//        }
         if (Perseverance.intake.hasBall()) {
             Perseverance.intake.intake()
         }

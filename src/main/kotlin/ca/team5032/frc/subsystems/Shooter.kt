@@ -31,7 +31,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
         object Idle : State()
     }
 
-    private val shooterFalcon = Falcon500(SHOOTER_ID)
+    private val shooterFalcon = Falcon500(SHOOTER_ID, null)
 
     // TODO: PID instead of bang bang. Start using PID way more.
     private val controller = PIDController(0.0, 0.0, 0.0)
@@ -41,9 +41,10 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     init {
         // Set the shooter falcon to coast to prevent the brake from fighting against BangBang.
         shooterFalcon.setNeutralMode(NeutralMode.Coast)
+        shooterFalcon.ticks = TalonTicks
         shooterFalcon.inverted = true
 
-        tab.addNumber("Encoder Value") { shooterFalcon.velocity(TalonTicks, Rotations / Minutes) }
+        tab.addNumber("Encoder Value") { shooterFalcon.velocity(Rotations / Minutes) }
         tab.addNumber("Current RPM", ::getRPM)
         tab.addNumber("Target RPM") {
             state.let {
@@ -64,7 +65,7 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
     override fun periodic() {
         state.let {
             // Simple state machine.
-            if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value) && it.targetSpeed() != 2000.0) {
+            if (it is State.RampingUp && withinThreshold(getRPM(), it.targetSpeed(), RPM_THRESHOLD.value) && it.targetSpeed() != 2300.0) {
                 changeState(State.AtSpeed(it.targetSpeed))
             } else if (it is State.AtSpeed && !withinThreshold(getRPM(), it.speed(), RPM_THRESHOLD.value)) {
                 changeState(State.RampingUp(it.speed))
@@ -73,13 +74,13 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
             when (it) {
                 is State.AtSpeed -> {
                     shooterFalcon.setVoltage(
-                        (it.speed() - getRPM()) / 700 +
-                        + 1.05 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
+                        (it.speed() - getRPM()) / 500 +
+                        + 1.07 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
 
                     Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
 
-                    if (it.speed() != 2000.0) {
+                    if (it.speed() != 2300.0) {
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kRightRumble, 1.0)
                         Perseverance.peripheralController.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0)
                     }
@@ -88,8 +89,8 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
                     // In Principle:
                     Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
                     shooterFalcon.setVoltage(
-                        (it.targetSpeed() - getRPM()) / 1000 +
-                        + 1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
+                        (it.targetSpeed() - getRPM()) / 500 +
+                        + 1.07 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
                 }
                 is State.Idle -> {
@@ -119,10 +120,10 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle), Tabbed {
             return 3747.22 - 566.703 * ty.pow(0.342127)
         }
 
-        return 2000.0
+        return 2300.0
     }
 
-    private fun getRPM() = shooterFalcon.velocity(TalonTicks, Rotations / Minutes)
+    private fun getRPM() = shooterFalcon.velocity( Rotations / Minutes)
 
     private fun withinThreshold(a: Double, b: Double, threshold: Double): Boolean {
         return abs(a - b) < threshold

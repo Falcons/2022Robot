@@ -26,7 +26,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     companion object {
         // Threshold to consider the robot as moving  (receiving joystick input)
-        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.05)
+        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.2)
         // Sensitivity for ySpeed cartesian movement. (north-south)
         val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 1.0)
         // Sensitivity for xSpeed cartesian movement. (south-west)
@@ -37,6 +37,8 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         val FAST_ROTATION = DoubleProperty("Rotation Speed", 0.65)
         // Magnitude of micro movements done by the dpad.
         val MICRO_SPEED = DoubleProperty("Micro Speed", 0.5)
+
+        val MAXIMUM_VELOCITY = DoubleProperty("Maximum Velocity", 1.0)
     }
 
     data class DriveInput(var ySpeed: Double, var xSpeed: Double, var zRotation: Double)
@@ -47,21 +49,31 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         object Idle : State()
     }
 
-    val frontLeft = Falcon500(FRONT_LEFT_ID)
-    val rearLeft = Falcon500(REAR_LEFT_ID)
-    val frontRight = Falcon500(FRONT_RIGHT_ID)
-    val rearRight = Falcon500(REAR_RIGHT_ID)
+    val frontLeft = Falcon500(FRONT_LEFT_ID, MotorProfile.DriveConfig)
+    val rearLeft = Falcon500(REAR_LEFT_ID, MotorProfile.DriveConfig)
+    val frontRight = Falcon500(FRONT_RIGHT_ID, MotorProfile.DriveConfig)
+    val rearRight = Falcon500(REAR_RIGHT_ID, MotorProfile.DriveConfig)
 
     private val field = Field2d()
 
     val gyro = PigeonIMU(0)
     private val controller: XboxController = Perseverance.driveController
 
-    private val odometry: MecanumDriveOdometry
-    var pose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0)) // TODO: Determine starting pose?
+    private val kinematics = MecanumDriveKinematics(
+        Translation2d(0.31, 0.28),
+        Translation2d(0.31, -0.28),
+        Translation2d(-0.31, 0.28),
+        Translation2d(-0.31, -0.28)
+    )
+    private val odometry = MecanumDriveOdometry(kinematics, Rotation2d(0.0))
+    private var currentPose = Pose2d(Translation2d(0.0, 0.0), Rotation2d(0.0))
+    val rotationController = PIDController(
+        0.01,
+        0.0,
+        0.0
+    )
 
     val autonomousInput = DriveInput(0.0, 0.0, 0.0)
-    val rotationController = PIDController(0.01, 0.0, 0.0)
 
     private val hasInput: Boolean
         get() = abs(controller.leftY) > DEADBAND_THRESHOLD.value
@@ -73,35 +85,18 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         frontRight.inverted = true
         rearRight.inverted = true
 
-        MotorProfile.DriveConfig.apply(frontLeft, rearLeft, frontRight, rearRight)
-
-        //gyro.enterCalibrationMode(PigeonIMU.CalibrationMode.)
-        //tab.add("ADIS Gyro", gyro)
         tab.add("Field2d", field)
-        //tab.add(rotationController)
-        rotationController.enableContinuousInput(0.0, 360.0)
-        //()
+        tab.addNumber("Heading", ::getHeading)
 
-        gyro.yaw = 0.0
-
-        val kinematics = MecanumDriveKinematics(
-            Translation2d(0.31, 0.28),
-            Translation2d(0.31, -0.28),
-            Translation2d(-0.31, 0.28),
-            Translation2d(-0.31, -0.28)
-        )
-        // TODO: Is it possible to construct starting pose from distance to HUB and balls? might not be worth the calculation
-        // for auto tho.
-        odometry = MecanumDriveOdometry(kinematics, Rotation2d(0.0))
-
-        tab.add("encoder vals") {
-            it.addDoubleProperty("Left Front", { frontLeft.sensorCollection.integratedSensorPosition }, {})
-            it.addDoubleProperty("Left Rear", { rearLeft.sensorCollection.integratedSensorPosition }, {})
-            it.addDoubleProperty("Right Front", { frontRight.sensorCollection.integratedSensorPosition }, {})
-            it.addDoubleProperty("Right Rear", { rearRight.sensorCollection.integratedSensorPosition }, {})
+        tab.add("Wheels Velocities") {
+            it.addDoubleProperty("Front Left", { frontLeft.velocity() }) {}
+            it.addDoubleProperty("Front Right", { frontRight.velocity() }) {}
+            it.addDoubleProperty("Rear Left", { rearLeft.velocity() }) {}
+            it.addDoubleProperty("Rear Right", { rearRight.velocity() }) {}
         }
 
-        tab.addNumber("Heading", ::getHeading)
+        rotationController.enableContinuousInput(0.0, 360.0)
+        gyro.yaw = 0.0
 
         buildConfig(DEADBAND_THRESHOLD, Y_SENSITIVITY, X_SENSITIVITY, ROTATION_SPEED, MICRO_SPEED)
     }
@@ -139,6 +134,8 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         }
 
         val motorOutputs = driveCartesianIK(ySpeed, xSpeed, zRotation)
+        //val desiredWheelSpeeds = kinematics.toWheelSpeeds(ChassisSpeeds(ySpeed, -xSpeed, -zRotation))
+
         frontLeft.set(motorOutputs[0])
         frontRight.set(motorOutputs[1])
         rearLeft.set(motorOutputs[2])
@@ -152,11 +149,11 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         )
         val gyroRadians = Rotation2d.fromDegrees(getHeading())
 
-        pose = odometry.update(gyroRadians, wheelSpeeds)
+        currentPose = odometry.update(gyroRadians, wheelSpeeds)
 
         Perseverance.limelight.getPoseOrNull()?.let {
             odometry.resetPosition(it, Rotation2d(getHeading()))
-            pose = it
+            currentPose = it
         }
 
         field.robotPose = odometry.poseMeters
@@ -171,6 +168,14 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
             return abs(gyro.yaw) % 360
         }
         return 360 - yaw % 360
+    }
+
+    override fun onStateChange(oldState: State, newState: State) {
+        if (oldState is State.Autonomous && newState is State.Idle) {
+            autonomousInput.zRotation = 0.0
+            autonomousInput.xSpeed = 0.0
+            autonomousInput.ySpeed = 0.0
+        }
     }
 
 }

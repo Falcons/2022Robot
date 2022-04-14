@@ -14,28 +14,31 @@ class RotateToAngleCommand(private val desiredAngle: Double) : CommandBase() {
 
     override fun initialize() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)
-        targetAngle = abs((Perseverance.drive.getHeading() + desiredAngle) % 360)
+
+        targetAngle = (Perseverance.drive.getHeading() + desiredAngle) % 360
         if (targetAngle < 0) {
             targetAngle += 360
         }
+
+        println("Target $targetAngle")
+        println("Curr Heading ${Perseverance.drive.getHeading()}")
+        println("Diff Angle ${getDiffAngle()}")
     }
 
     override fun execute() {
-        val currentAngle = getDiffAngle()
-
-        val output = Perseverance.drive.rotationController.calculate(currentAngle, 0.0)
+        val output = Perseverance.drive.rotationController.calculate(getDiffAngle(), 0.0)
         val absolute = abs(output)
         val sign = sign(output)
 
         val remapped = absolute * (MAXIMUM_ROTATION_SPEED - MINIMUM_ROTATION_SPEED) + MINIMUM_ROTATION_SPEED
 
         Perseverance.drive.autonomousInput.zRotation = sign * remapped
-
-        if (Perseverance.drive.rotationController.atSetpoint()) this.cancel()
     }
 
     override fun isFinished(): Boolean {
-        return abs(getDiffAngle()) < 3
+        println("Diff ${getDiffAngle()}, Phi ${Perseverance.drive.getHeading()}")
+
+        return abs(getDiffAngle()) < 2.5
     }
 
     override fun end(interrupted: Boolean) {
@@ -45,9 +48,9 @@ class RotateToAngleCommand(private val desiredAngle: Double) : CommandBase() {
 
     private fun getDiffAngle(): Double {
         val phi = abs(Perseverance.drive.getHeading() - targetAngle) % 360
-        val distance = if (phi > 180) 360 - phi else phi
+        val direction = sign(Perseverance.drive.getHeading() - targetAngle)
 
-        return distance
+        return direction * (if (phi > 180) 360 - phi else phi)
     }
 
 }
