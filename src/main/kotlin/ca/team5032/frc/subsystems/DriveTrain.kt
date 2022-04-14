@@ -26,7 +26,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
     companion object {
         // Threshold to consider the robot as moving  (receiving joystick input)
-        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.2)
+        val DEADBAND_THRESHOLD = DoubleProperty("Deadband Threshold", 0.05)
         // Sensitivity for ySpeed cartesian movement. (north-south)
         val Y_SENSITIVITY = DoubleProperty("Y Sensitivity", 1.0)
         // Sensitivity for xSpeed cartesian movement. (south-west)
@@ -134,7 +134,6 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         }
 
         val motorOutputs = driveCartesianIK(ySpeed, xSpeed, zRotation)
-        //val desiredWheelSpeeds = kinematics.toWheelSpeeds(ChassisSpeeds(ySpeed, -xSpeed, -zRotation))
 
         frontLeft.set(motorOutputs[0])
         frontRight.set(motorOutputs[1])
@@ -150,12 +149,6 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
         val gyroRadians = Rotation2d.fromDegrees(getHeading())
 
         currentPose = odometry.update(gyroRadians, wheelSpeeds)
-
-        Perseverance.limelight.getPoseOrNull()?.let {
-            odometry.resetPosition(it, Rotation2d(getHeading()))
-            currentPose = it
-        }
-
         field.robotPose = odometry.poseMeters
     }
 

@@ -1,6 +1,7 @@
 package ca.team5032.frc
 
-import ca.team5032.frc.auto.*
+import ca.team5032.frc.auto.AlignToTargetCommand
+import ca.team5032.frc.auto.Limelight
 import ca.team5032.frc.led.LEDSystem
 import ca.team5032.frc.subsystems.*
 import edu.wpi.first.cameraserver.CameraServer
@@ -8,7 +9,7 @@ import edu.wpi.first.cscore.VideoSource
 import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj.livewindow.LiveWindow
-import edu.wpi.first.wpilibj2.command.*
+import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.button.POVButton
 
@@ -26,74 +27,7 @@ object Perseverance : TimedRobot(0.02) {
     val limelight = Limelight()
     val led = LEDSystem()
 
-    private val autonomousRoutine = SequentialCommandGroup(
-        InstantCommand({ intake.deployIntake() }),
-        WaitCommand(0.3),
-        InstantCommand({ intake.intake() }),
-        DriveForwardCommand(.65),
-        WaitUntilCommand { intake.hasBall() },
-        InstantCommand({ intake.stop() }),
-        RotateToAngleCommand(180.0),
-        ShootAmountCommand(2),
-        InstantCommand({
-            limelight.changeState(Limelight.State.Targeting(
-                Limelight.Pipeline.getBall()
-            ))
-        }),
-        RotateToAngleCommand(-77.0),
-        AlignToTargetCommand(
-            Limelight.Pipeline.getBall(),
-            1,
-            false
-        ),
-        InstantCommand({
-            limelight.changeState(Limelight.State.Targeting(
-                Limelight.Pipeline.ReflectiveTape
-            ))
-        }),
-        InstantCommand({
-            intake.intake()
-            transfer.up()
-        }),
-        DriveForwardCommand(3.0),
-        WaitUntilCommand { transfer.hasBall() },
-        InstantCommand({
-            intake.stop()
-            transfer.stop()
-        }),
-        RotateToAngleCommand(120.0),
-        ShootAmountCommand(1),
-        InstantCommand({
-            limelight.changeState(Limelight.State.Targeting(
-                Limelight.Pipeline.getBall()
-            ))
-        }),
-        RotateToAngleCommand(180.0),
-        AlignToTargetCommand(
-            Limelight.Pipeline.getBall(),
-            1,
-            false
-        ),
-        InstantCommand({
-            limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
-        }),
-        InstantCommand({
-            intake.intake()
-            transfer.up()
-        }),
-        DriveForwardCommand(2.07),
-        WaitUntilCommand {
-            transfer.hasBall() && intake.hasBall()
-        },
-        InstantCommand({
-            intake.stop()
-            transfer.stop()
-        }),
-        RotateToAngleCommand(180.0),
-        DriveForwardCommand(1.70, 1.0),
-        AlignToTargetCommand(Limelight.Pipeline.ReflectiveTape, -1),
-        ShootCommand(2)
-    )
+    //private val autonomousRoutine =
 
     override fun robotInit() {
         LiveWindow.disableAllTelemetry()
@@ -155,12 +89,12 @@ object Perseverance : TimedRobot(0.02) {
     }
 
     override fun autonomousInit() {
-        autonomousRoutine.schedule()
+        //autonomousRoutine.schedule()
         drive.gyro.yaw = 0.0
     }
 
     override fun autonomousExit() {
-        autonomousRoutine.cancel()
+        //autonomousRoutine.cancel()
     }
 
 }
