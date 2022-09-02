@@ -9,7 +9,7 @@ import kotlin.math.abs
 import kotlin.math.sign
 
 class AlignToTargetCommand(
-    private val targetPipeline: Limelight.Pipeline,
+    private val targetPipeline: () -> Limelight.Pipeline,
     private val direction: Int,
     private val seek: Boolean = true
 ) : CommandBase() {
@@ -19,25 +19,25 @@ class AlignToTargetCommand(
     // Must be at the setpoint for 0.2 seconds.
     private var tickThreshold = 0.2 / Perseverance.period
 
-    private val setpoint = if (targetPipeline == Limelight.Pipeline.ReflectiveTape) 0.0 else -2.0
+    //private val setpoint = if (targetPipeline == Limelight.Pipeline.ReflectiveTape) 0.0 else 1.0
 
     override fun initialize() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)
 
-        limelight.changeState(Limelight.State.Targeting(targetPipeline))
+        limelight.changeState(Limelight.State.Targeting(targetPipeline.invoke()))
 
         ticksAtSetpoint = 0
     }
 
     override fun execute() {
         Perseverance.drive.changeState(DriveTrain.State.Autonomous)
-        limelight.changeState(Limelight.State.Targeting(targetPipeline))
+        limelight.changeState(Limelight.State.Targeting(targetPipeline.invoke()))
 
         if (limelight.hasTarget()) {
             // Turn towards target.
             val distance = limelight.target.offset.x
 
-            val output = limelight.controller.calculate(distance, setpoint)
+            val output = limelight.controller.calculate(distance, 0.0)
             val absolute = abs(output)
             val sign = -sign(output)
 

@@ -24,7 +24,7 @@ class ThreeBallAutoCommand : SequentialCommandGroup(
         )
     }),
     RotateToAngleCommand(-77.0),
-    AlignToTargetCommand(Limelight.Pipeline.getBall(), 1, false),
+    AlignToTargetCommand({ Limelight.Pipeline.getBall() }, 1, false),
     InstantCommand({
         Perseverance.limelight.changeState(
             Limelight.State.Targeting(

@@ -19,10 +19,6 @@ class RotateToAngleCommand(private val desiredAngle: Double) : CommandBase() {
         if (targetAngle < 0) {
             targetAngle += 360
         }
-
-        println("Target $targetAngle")
-        println("Curr Heading ${Perseverance.drive.getHeading()}")
-        println("Diff Angle ${getDiffAngle()}")
     }
 
     override fun execute() {
@@ -36,8 +32,6 @@ class RotateToAngleCommand(private val desiredAngle: Double) : CommandBase() {
     }
 
     override fun isFinished(): Boolean {
-        println("Diff ${getDiffAngle()}, Phi ${Perseverance.drive.getHeading()}")
-
         return abs(getDiffAngle()) < 2.5
     }
 

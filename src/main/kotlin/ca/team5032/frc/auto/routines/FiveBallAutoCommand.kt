@@ -24,7 +24,7 @@ class FiveBallAutoCommand : SequentialCommandGroup(
         )
     }),
     RotateToAngleCommand(-77.0),
-    AlignToTargetCommand(Limelight.Pipeline.getBall(), 1, false),
+    AlignToTargetCommand({ Limelight.Pipeline.getBall() }, 1, false),
     InstantCommand({
         Perseverance.limelight.changeState(
             Limelight.State.Targeting(
@@ -52,7 +52,7 @@ class FiveBallAutoCommand : SequentialCommandGroup(
         )
     }),
     RotateToAngleCommand(180.0),
-    AlignToTargetCommand(Limelight.Pipeline.getBall(), 1, false),
+    AlignToTargetCommand({ Limelight.Pipeline.getBall() }, 1, false),
     InstantCommand({
         Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
     }),
@@ -60,7 +60,7 @@ class FiveBallAutoCommand : SequentialCommandGroup(
         Perseverance.intake.cycle()
         Perseverance.transfer.up()
     }),
-    DriveDistanceCommand(2.07),
+    DriveDistanceCommand(2.17),
     WaitUntilCommand {
         Perseverance.transfer.hasBall() && Perseverance.intake.hasBall()
     },
@@ -69,6 +69,6 @@ class FiveBallAutoCommand : SequentialCommandGroup(
         Perseverance.transfer.stop()
     }),
     RotateToAngleCommand(180.0),
-    DriveDistanceCommand(1.70, 1.0),
+    DriveDistanceCommand(1.80, 1.0),
     ShootAmountCommand(2)
 )

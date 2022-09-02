@@ -29,6 +29,11 @@ class Transfer : Subsystem<Transfer.State>("Transfer", State.Idle), Tabbed {
 
     override fun periodic() {
         state.let {
+            if (hasBall() && Perseverance.shooter.state !is Shooter.State.AtSpeed && it is State.TransferringUp) {
+                transferVictor.set(0.0)
+                return
+            }
+
             when (it) {
                 State.TransferringUp -> transferVictor.set(-DEFAULT_POWER.value)
                 State.TransferringOut -> transferVictor.set(DEFAULT_POWER.value)

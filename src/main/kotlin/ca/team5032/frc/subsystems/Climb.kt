@@ -1,5 +1,6 @@
 package ca.team5032.frc.subsystems
 
+import ca.team5032.frc.Perseverance
 import ca.team5032.frc.utils.*
 import ca.team5032.frc.utils.motor.Falcon500
 import com.ctre.phoenix.motorcontrol.NeutralMode
@@ -10,9 +11,7 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
 
     companion object {
         // Default power for climb
-        val MAIN_POWER = DoubleProperty("Power",  1.0)
-
-        val PIVOT_POWER = DoubleProperty("Pivot Power", 0.3)
+        val MAIN_POWER = DoubleProperty("Power",  0.7)
     }
 
     sealed class State {
@@ -41,6 +40,10 @@ class Climb : Subsystem<Climb.State>("Climb", State.Idle), Tabbed {
             if ((!bottomSensor.get() && it is State.Down) || (!topSensor.get() && it is State.Up)) {
                 climbFalcon.set(0.0)
                 return
+            }
+
+            if (state !is State.Idle) {
+                Perseverance.intake.raise()
             }
 
             when (it) {

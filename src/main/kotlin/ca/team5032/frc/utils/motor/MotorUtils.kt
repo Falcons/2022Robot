@@ -28,9 +28,6 @@ class Falcon500(private val motorId: Int, config: MotorProfile<Falcon500>?) : WP
         val output = controller.calculate(velocity(unit), speed)
         val remapped = output * (1 - 0.3) + (0.3 * sign(output))
 
-        println("Motor Id $motorId: Output $output, Remapped $remapped")
-        println("- Current vel: ${velocity(unit)}, Desired: $speed")
-
         set(remapped)
     }
 

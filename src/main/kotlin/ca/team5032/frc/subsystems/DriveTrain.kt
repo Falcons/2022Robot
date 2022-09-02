@@ -34,6 +34,7 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
 
         // Rotation multiplier.
         val ROTATION_SPEED = DoubleProperty("Rotation Speed", 0.45)
+        val FAST_ROTATION_SPEED = DoubleProperty("Fast Rotation Speed", 0.8)
         // Magnitude of micro movements done by the dpad.
         val MICRO_SPEED = DoubleProperty("Micro Speed", 0.5)
     }
@@ -77,6 +78,8 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
                 || abs(controller.leftX) > DEADBAND_THRESHOLD.value
                 || abs(controller.rightX) > DEADBAND_THRESHOLD.value
                 || controller.pov != -1
+                || controller.leftTriggerAxis > DEADBAND_THRESHOLD.value
+                || controller.rightTriggerAxis > DEADBAND_THRESHOLD.value
 
     init {
         frontRight.inverted = true
@@ -101,11 +104,23 @@ class DriveTrain : Subsystem<DriveTrain.State>("Drive", State.Idle), Tabbed {
     private fun getInput(): DriveInput {
         return when (state) {
             is State.Autonomous -> autonomousInput
-            is State.Driving -> DriveInput(
-                    -controller.leftY * Y_SENSITIVITY.value,
-                    controller.leftX * X_SENSITIVITY.value,
+            is State.Driving -> {
+                val ySpeed = controller.leftY * Y_SENSITIVITY.value
+                val xSpeed = controller.leftX * X_SENSITIVITY.value
+                val zRotation = if (controller.leftTriggerAxis > 0.05) {
+                    -controller.leftTriggerAxis * FAST_ROTATION_SPEED.value
+                } else if (controller.rightTriggerAxis > 0.05) {
+                    controller.rightTriggerAxis * FAST_ROTATION_SPEED.value
+                } else {
                     controller.rightX * ROTATION_SPEED.value
+                }
+
+                DriveInput(
+                    -ySpeed,
+                    xSpeed,
+                    zRotation
                 )
+            }
             else -> DriveInput(0.0, 0.0, 0.0)
         }
     }

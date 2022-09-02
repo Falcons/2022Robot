@@ -34,11 +34,7 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
         companion object {
             fun from(value: Int) = values().firstOrNull { it.value == value } ?: ReflectiveTape
 
-            fun getBall() = if (DriverStation.getAlliance() == DriverStation.Alliance.Red)
-                    RedBall
-                else
-                    BlueBall
-
+            fun getBall() = if (DriverStation.getAlliance() == DriverStation.Alliance.Red) RedBall else BlueBall
         }
     }
 
@@ -57,6 +53,8 @@ class Limelight: Subsystem<Limelight.State>("Limelight", State.Idle), Tabbed {
         data class Targeting(val pipeline: Limelight.Pipeline) : State()
         object Idle : State()
     }
+
+    val enabled = NetworkTableInstance.getDefault().getTable("limelight").containsKey("tv")
 
     val controller = PIDController(0.01, 0.0, 0.0)
 

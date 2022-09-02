@@ -34,6 +34,11 @@ class Intake : Subsystem<Intake.State>("Intake", State.Idle), Tabbed {
 
     override fun periodic() {
         state.let {
+            if (Perseverance.transfer.hasBall() && hasBall() && it is State.Intaking) {
+                intakeVictor.set(0.0)
+                return
+            }
+
             when (it) {
                 is State.Intaking -> intakeVictor.set(-DEFAULT_POWER.value)
                 is State.Ejecting -> intakeVictor.set(DEFAULT_POWER.value)

@@ -13,7 +13,7 @@ import kotlin.math.pow
 class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle()), Tabbed {
 
     companion object {
-        val RPM_THRESHOLD = DoubleProperty("RPM Threshold", 100.0)
+        val RPM_THRESHOLD = DoubleProperty("RPM Threshold", 75.0)
 
         const val kS: Double = 0.20985
         const val kV: Double = 0.11193
@@ -55,8 +55,8 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle()), Tabbed {
             when (it) {
                 is State.AtSpeed -> {
                     shooterFalcon.setVoltage(
-                        (it.speed() - getRPM()) / 500 +
-                        + 1.07 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
+                        (it.speed() - getRPM()) / 750 +
+                        + 1.05 * feedforward.calculate(it.speed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
 
                     Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
@@ -70,8 +70,8 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle()), Tabbed {
                     // In Principle:
                     Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
                     shooterFalcon.setVoltage(
-                        (it.targetSpeed() - getRPM()) / 500 +
-                        + 1.07 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
+                        (it.targetSpeed() - getRPM()) / 750 +
+                        + 1.05 * feedforward.calculate(it.targetSpeed() apply (Rotations / Minutes to Rotations / Seconds))
                     )
                 }
                 is State.Idle -> {
@@ -87,6 +87,10 @@ class Shooter : Subsystem<Shooter.State>("Shooter", State.Idle()), Tabbed {
     fun shoot() {
         Perseverance.limelight.changeState(Limelight.State.Targeting(Limelight.Pipeline.ReflectiveTape))
         changeState(State.RampingUp(::getTargetRPM))
+    }
+
+    fun shoot(speed: () -> Double) {
+        changeState(State.RampingUp(speed))
     }
 
     fun stop() {
